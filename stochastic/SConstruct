@@ -1,0 +1,19 @@
+"""
+Stochastic simulation of zebrafish segmentation clock (Fall 2016)
+"""
+
+compile_flags = '-Wall -O2 '
+link_flags = ''
+if ARGUMENTS.get('profiling', 0):
+	compile_flags += '-pg'
+	link_flags += '-pg'
+elif ARGUMENTS.get('debug', 0):
+	compile_flags += '-g'
+elif ARGUMENTS.get('memtrack', 0):
+	compile_flags += '-D MEMTRACK'
+
+env = Environment(CXX='g++')
+env.Append(CXXFLAGS=compile_flags, LINKFLAGS=link_flags)
+env.Program(target='stochastic', source=['source/main.cpp','source/init.cpp','source/sim.cpp', 'source/io.cpp', 'source/memory.cpp', 'source/debug.cpp', 'source/reactions.cpp', 'source/propensity.cpp'])
+
+

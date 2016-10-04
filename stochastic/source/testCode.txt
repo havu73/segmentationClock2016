@@ -1,0 +1,33 @@
+int main(int argc, char** argv) {
+	input_params ip;
+	ip.print_states = new int[2];
+	(ip.print_states)[0] = PH1;
+	(ip.print_states)[1] = PH7;
+	ip.num_print_states = 2;
+	
+	concentrations cons(ip);
+	
+	for (int i = 0; i < 4; i++){
+		(*(cons.cons_data)[MH1])[i] = i;
+		(*(cons.cons_data)[MH7])[i] = i;
+		(*(cons.cons_data)[MD])[i] = i;
+		(*(cons.cons_data)[PH1])[i] = i;
+		(*(cons.cons_data)[PH1])[i] = i;
+	}
+	
+	for (int i = 1; i < 3; i++){
+		cout << (*(cons.cons_data)[MH1])[i] << endl;
+		cout << (*(cons.cons_data)[MH7])[i] << endl;
+		cout << (*(cons.cons_data)[MD])[i] << endl;
+		cout << (*(cons.cons_data)[PH1])[i] << endl;
+		cout << (*(cons.cons_data)[PH1])[i] << endl;
+	}
+	cons.reset();
+	for (int i = 1; i < 3; i++){
+		cout << (*(cons.cons_data)[MH1])[i] << endl;
+		cout << (*(cons.cons_data)[MH7])[i] << endl;
+		cout << (*(cons.cons_data)[MD])[i] << endl;
+		cout << (*(cons.cons_data)[PH1])[i] << endl;
+		cout << (*(cons.cons_data)[PH1])[i] << endl;
+	}
+}

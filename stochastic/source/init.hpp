@@ -7,5 +7,5 @@ using namespace std;
 void init_terminal();
 void free_terminal();
 void init_verbosity(input_params&);
-
+void init_propensities(propensities&);
 #endif

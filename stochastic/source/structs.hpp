@@ -261,12 +261,100 @@ struct concentrations{
 	}
 };
 
-struct propensities{
+struct complete_delay{};
+
+struct rates {
+	//rates bases and rates for mutants
+	double* rates_base;  // Base rates taken from the current parameter set
 	
+	explicit rates () {
+		this->rates_base = new double [NUM_RATES];
+		memset(this->rates_base, 0, sizeof(double) * NUM_RATES);
+	}
+	
+	void clear (){
+		delete [](this->rates_base);
+	}
+	
+	void reset(){
+		memset(this->rates_base, 0, sizeof(double) * NUM_RATES);
+	}
+	
+	~rates () {
+		delete [](this->rates_base);
+	}
 };
-struct internal_time{};
-struct rates{};
-struct delay_time{};
+
+struct parameters {
+	//rates bases and rates for mutants
+	double** data;  // Base rates taken from the current parameter set
+	int num_sets; 
+	explicit parameters (int num_sets) {
+		this->num_sets = num_sets;
+		this->data = new double* [num_sets];
+		for (int i = 0; i < num_sets; i ++){
+			this->data[i] = new double[NUM_RATES];
+			memset(this->data[i], 0, sizeof(double) * NUM_RATES);
+		}
+	}
+	
+	void clear (){
+		for (int i = 0; i < this->num_sets; i++) {
+				delete[] this->data[i];
+		}
+		delete[] this->data;
+	}
+	
+	~parameters () {
+		this->clear();
+	}
+};
+
+
+struct cell{
+	concentrations * cons;		// concentrations of different states inside the cell
+	double * propen;		// propensities of reactions inside the cell
+	double * next_internal;		// next internal time of reactions in the system
+	double * current_internal; // current internal time of reactions in the system
+	complete_delay * cdelay; // the priority queue of the complettion time of delay reactions going on at a specific moment in the cell
+	double absolute_time; // the current absolute time of the cell
+	int index; 	//the index of the cell inside the embryo
+	
+	cell(int index, input_params& ip){
+		this->cons = new concentrations(ip);
+		this->propen = new double[NUM_REACTIONS];
+		this->next_internal = new double [NUM_REACTIONS];
+		this->current_internal = new double [NUM_REACTIONS];
+		this->cdelay = new complete_delay();
+		this->absolute_time = 0;
+		this->index = index;
+	}
+	
+	~cell(){
+		delete this->cons;
+		delete [] this->propen;
+		delete [] this->next_internal;
+		delete [] this->current_internal;
+		delete this->cdelay;
+	}
+};
+
+struct dependency_graph{};
+
+struct propensities{
+	void (*prop_funs[NUM_REACTIONS]) (cell&, rates&);
+	dependency_graph * dgraph;
+	
+	propensities(dependency_graph* dg){
+		memset(this->prop_funs, 0, sizeof(this->prop_funs));
+		this->dgraph = dg;
+	}
+	
+	~propensities(){
+		
+	}
+};
+
 
 struct input_data {
 	char* filename; // The path and name of the file

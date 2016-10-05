@@ -31,3 +31,185 @@ int main(int argc, char** argv) {
 		cout << (*(cons.cons_data)[PH1])[i] << endl;
 	}
 }
+
+ip.print_states = new int[2];
+	(ip.print_states)[0] = PH1;
+	(ip.print_states)[1] = PH7;
+	ip.num_print_states = 2;
+	dependency_graph dg;
+	cell ce(0, ip);
+	rates rs;
+	propensities prop (&dg);
+	init_propensities(prop);
+	(*(prop.prop_funs[RPSH1]))(ce, rs);
+	(*(prop.prop_funs[RPSH7]))(ce, rs);
+	(*(prop.prop_funs[RPSD]))(ce, rs);
+	
+	(*(prop.prop_funs[RPDH1]))(ce, rs);
+	(*(prop.prop_funs[RPDH7]))(ce, rs);
+	(*(prop.prop_funs[RPDD]))(ce, rs);
+	(*(prop.prop_funs[RPDH11]))(ce, rs);
+	(*(prop.prop_funs[RPDH17]))(ce, rs);
+	(*(prop.prop_funs[RPDH77]))(ce, rs);
+	
+	(*(prop.prop_funs[RDAH11]))(ce, rs);
+	(*(prop.prop_funs[RDAH17]))(ce, rs);
+	(*(prop.prop_funs[RDAH77]))(ce, rs);
+	
+	(*(prop.prop_funs[RDDH11]))(ce, rs);
+	(*(prop.prop_funs[RDDH17]))(ce, rs);
+	(*(prop.prop_funs[RDDH77]))(ce, rs);
+	
+	(*(prop.prop_funs[RMDH1]))(ce, rs);
+	(*(prop.prop_funs[RMDH7]))(ce, rs);
+	(*(prop.prop_funs[RMDD]))(ce, rs);
+	
+	(*(prop.prop_funs[RMSH1]))(ce, rs);
+	(*(prop.prop_funs[RMSH1N]))(ce, rs);
+	
+	(*(prop.prop_funs[RAG1PH11]))(ce, rs);
+	(*(prop.prop_funs[RDG1PH11]))(ce, rs);
+	
+	(*(prop.prop_funs[RAG1N]))(ce, rs);
+	(*(prop.prop_funs[RDG1N]))(ce, rs);
+	
+	(*(prop.prop_funs[RMSH7]))(ce, rs);
+	(*(prop.prop_funs[RMSH7N]))(ce, rs);
+	
+	(*(prop.prop_funs[RAG7PH11]))(ce, rs);
+	(*(prop.prop_funs[RDG7PH11]))(ce, rs);
+	
+	(*(prop.prop_funs[RAG7N]))(ce, rs);
+	(*(prop.prop_funs[RDG7N]))(ce, rs);
+	
+	(*(prop.prop_funs[RMSD]))(ce, rs);
+
+	(*(prop.prop_funs[RAGDPH11]))(ce, rs);
+	(*(prop.prop_funs[RDGDPH11]))(ce, rs);
+	
+	#include "propensity.hpp"
+void propensityRPSH1(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPSH1" << endl;
+}
+
+void propensityRPSH7(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPSH7" << endl;
+}
+
+void propensityRPSD(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPSD" << endl;
+}
+
+void propensityRPDH1(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDH1" << endl;
+}
+
+void propensityRPDH7(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDH7" << endl;
+}
+
+void propensityRPDD(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDD" << endl;
+}
+
+void propensityRPDH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDH11" << endl;
+}
+
+void propensityRPDH17(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDH17" << endl;
+}
+
+void propensityRPDH77(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRPDH77" << endl;
+}
+
+void propensityRDAH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDAH11" << endl;
+}
+
+void propensityRDAH17(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDAH17" << endl;
+}
+
+void propensityRDAH77(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDAH77" << endl;
+}
+
+void propensityRDDH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDDH11" << endl;
+}
+
+void propensityRDDH17(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDDH17" << endl;
+}
+
+void propensityRDDH77(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDDH77" << endl;
+}
+
+void propensityRMDH1(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMDH1" << endl;
+}
+
+void propensityRMDH7(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMDH7" << endl;
+}
+
+void propensityRMDD(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMDD" << endl;
+}
+
+void propensityRMSH1(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMSH1" << endl;
+}
+void propensityRMSH1N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMSH1N" << endl;
+}
+
+void propensityRAG1PH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRAG1PH11" << endl;
+}
+void propensityRDG1PH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDG1PH11" << endl;
+}
+
+void propensityRAG1N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRAG1N" << endl;
+}
+void propensityRDG1N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDG1N" << endl;
+}
+
+void propensityRMSH7(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMSH7" << endl;
+}
+void propensityRMSH7N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMSH7N" << endl;
+}
+
+void propensityRAG7PH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRAG7PH11" << endl;
+}
+void propensityRDG7PH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDG7PH11" << endl;
+}
+
+void propensityRAG7N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRAG7N" << endl;
+}
+void propensityRDG7N(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDG7N" << endl;
+}
+
+void propensityRMSD(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRMSD" << endl;
+}
+
+void propensityRAGDPH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRAGDPH11" << endl;
+}
+void propensityRDGDPH11(cell& ce, rates& rs){
+	cout << "Hello! Inside propensityRDGDPH11" << endl;
+}
+

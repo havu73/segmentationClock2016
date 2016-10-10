@@ -339,7 +339,248 @@ struct cell{
 	}
 };
 
-struct dependency_graph{};
+struct dependency_graph{
+	int ** dependency; // 2D arrays containing the indicies of reactions that if a reactions occur, would need to recalculate the propensity function
+	// Notes: there are two reactions: RPSD and RPDD are reactions that we also need to calculate the neighbor cells too
+	
+	int * dependency_size; // 1D array containing the size of each array of dependent reactions for each reaction
+						   // Ex: reaction 1 happens  requires updating 2 other reactions' propensity --> dependency_size[0] = 2
+	dependency_graph(){
+		this->dependency = new int* [NUM_REACTIONS];
+		this->dependency_size = new int [NUM_REACTIONS];
+		for (int i = 0; i < NUM_REACTIONS; i++){
+			(this->dependency)[i] = new int [8];
+			memset((this->dependency)[i], 0, sizeof(int) * 8);
+			this->dependency_size[i] = 0;
+		}
+		this->construct_dependency();
+	}
+	
+	void construct_dependency(){
+		(this->dependency)[RPSH1][0] = RPDH1;
+		(this->dependency)[RPSH1][1] = RDAH11;
+		(this->dependency)[RPSH1][2] = RDAH17;
+		(this->dependency_size)[RPSH1] = 3;
+		
+		(this->dependency)[RPSH7][0] = RPDH7;
+		(this->dependency)[RPSH7][1] = RDAH17;
+		(this->dependency)[RPSH7][2] = RDAH77;
+		(this->dependency_size)[RPSH7] = 3;
+		
+		(this->dependency)[RPSD][0] = RPDD;
+		(this->dependency)[RPSD][1] = RAG1N; // We actually update RAG1N propensities for neighbors, not the cell itself
+		(this->dependency)[RPSD][2] = RAG7N; // Same above
+		(this->dependency_size)[RPSD] = 3;
+		
+		(this->dependency)[RPDH1][0] = RPDH1;
+		(this->dependency)[RPDH1][1] = RDAH11;
+		(this->dependency)[RPDH1][2] = RDAH17;
+		(this->dependency_size)[RPDH1] = 3;
+		
+		(this->dependency)[RPDH7][0] = RPDH7;
+		(this->dependency)[RPDH7][1] = RDAH17;
+		(this->dependency)[RPDH7][2] = RDAH77;
+		(this->dependency_size)[RPDH7] = 3;
+		
+		(this->dependency)[RPDD][0] = RPDD;
+		(this->dependency)[RPDD][1] = RAG1N; // We actually update RAG1N propensities for neighbors, not the cell itself
+		(this->dependency)[RPDD][2] = RAG7N; // Same above
+		(this->dependency_size)[RPDD] = 3;
+		
+		(this->dependency)[RPDH11][0] = RPDH11;
+		(this->dependency)[RPDH11][1] = RDDH11;
+		(this->dependency)[RPDH11][2] = RAG1PH11;
+		(this->dependency)[RPDH11][3] = RAG7PH11;
+		(this->dependency)[RPDH11][4] = RAGDPH11;
+		(this->dependency_size)[RPDH11] = 5;
+		
+		(this->dependency)[RPDH17][0] = RPDH17;
+		(this->dependency)[RPDH17][1] = RDDH17;
+		(this->dependency_size)[RPDH17] = 2;
+		
+		(this->dependency)[RPDH77][0] = RPDH77;
+		(this->dependency)[RPDH77][1] = RDDH77;
+		(this->dependency_size)[RPDH77] = 2;
+		
+		(this->dependency)[RDAH11][0] = RPDH1;
+		(this->dependency)[RDAH11][1] = RDAH11;
+		(this->dependency)[RDAH11][2] = RDAH17;
+		(this->dependency)[RDAH11][3] = RPDH11;
+		(this->dependency)[RDAH11][4] = RDDH11;
+		(this->dependency)[RDAH11][5] = RAG1PH11;
+		(this->dependency)[RDAH11][6] = RAG7PH11;
+		(this->dependency)[RDAH11][7] = RAGDPH11;
+		(this->dependency_size)[RDAH11] = 8;
+		
+		(this->dependency)[RDAH17][0] = RPDH1;
+		(this->dependency)[RDAH17][1] = RDAH11;
+		(this->dependency)[RDAH17][2] = RDAH17;
+		(this->dependency)[RDAH17][3] = RPDH7;
+		(this->dependency)[RDAH17][4] = RDAH77;
+		(this->dependency)[RDAH17][5] = RPDH17;
+		(this->dependency)[RDAH17][6] = RDDH17;
+		(this->dependency_size)[RDAH17] = 7;
+		
+		(this->dependency)[RDAH77][0] = RPDH7;
+		(this->dependency)[RDAH77][1] = RDAH17;
+		(this->dependency)[RDAH77][2] = RDAH77;
+		(this->dependency)[RDAH77][3] = RPDH77;
+		(this->dependency)[RDAH77][4] = RDDH77;
+		(this->dependency_size)[RDAH77] = 5;
+		
+		(this->dependency)[RDDH11][0] = RPDH1;
+		(this->dependency)[RDDH11][1] = RDAH11;
+		(this->dependency)[RDDH11][2] = RDAH17;
+		(this->dependency)[RDDH11][3] = RPDH11;
+		(this->dependency)[RDDH11][4] = RDDH11;
+		(this->dependency)[RDDH11][5] = RAG1PH11;
+		(this->dependency)[RDDH11][6] = RAG7PH11;
+		(this->dependency)[RDDH11][7] = RAGDPH11;
+		(this->dependency_size)[RDDH11] = 8;
+		
+		(this->dependency)[RDDH17][0] = RPDH1;
+		(this->dependency)[RDDH17][1] = RDAH11;
+		(this->dependency)[RDDH17][2] = RDAH17;
+		(this->dependency)[RDDH17][3] = RPDH7;
+		(this->dependency)[RDDH17][4] = RDAH77;
+		(this->dependency)[RDDH17][5] = RPDH17;
+		(this->dependency)[RDDH17][6] = RDDH17;
+		(this->dependency_size)[RDDH17] = 7;
+		
+		(this->dependency)[RDDH77][0] = RPDH7;
+		(this->dependency)[RDDH77][1] = RDAH17;
+		(this->dependency)[RDDH77][2] = RDAH77;
+		(this->dependency)[RDDH77][3] = RPDH77;
+		(this->dependency)[RDDH77][4] = RDDH77;
+		(this->dependency_size)[RDDH77] = 5;
+		
+		(this->dependency)[RMDH1][0] = RPSH1;
+		(this->dependency)[RMDH1][1] = RMDH1;
+		(this->dependency_size)[RMDH1] = 2;
+		
+		(this->dependency)[RMDH7][0] = RPSH7;
+		(this->dependency)[RMDH7][1] = RMDH7;
+		(this->dependency_size)[RMDH7] = 2;
+		
+		(this->dependency)[RMDD][0] = RPSD;
+		(this->dependency)[RMDD][1] = RMDD;
+		(this->dependency_size)[RMDD] = 2;
+		
+		(this->dependency)[RMSH1][0] = RPSH1;
+		(this->dependency)[RMSH1][1] = RMDH1;
+		(this->dependency_size)[RMSH1] = 2;
+		
+		(this->dependency)[RMSH1N][0] = RPSH1;
+		(this->dependency)[RMSH1N][1] = RMDH1;
+		(this->dependency_size)[RMSH1N] = 2;
+		
+		(this->dependency)[RAG1PH11][0] = RMSH1;
+		(this->dependency)[RAG1PH11][1] = RAG1PH11;
+		(this->dependency)[RAG1PH11][2] = RAG1N;
+		(this->dependency)[RAG1PH11][3] = RPDH11;
+		(this->dependency)[RAG1PH11][4] = RDDH11;
+		(this->dependency)[RAG1PH11][5] = RAG7PH11;
+		(this->dependency)[RAG1PH11][6] = RAGDPH11;
+		(this->dependency)[RAG1PH11][7] = RDG1PH11;
+		(this->dependency_size)[RAG1PH11] = 8;
+		
+		(this->dependency)[RDG1PH11][0] = RMSH1;
+		(this->dependency)[RDG1PH11][1] = RAG1PH11;
+		(this->dependency)[RDG1PH11][2] = RAG1N;
+		(this->dependency)[RDG1PH11][3] = RPDH11;
+		(this->dependency)[RDG1PH11][4] = RDDH11;
+		(this->dependency)[RDG1PH11][5] = RAG7PH11;
+		(this->dependency)[RDG1PH11][6] = RAGDPH11;
+		(this->dependency)[RDG1PH11][7] = RDG1PH11;
+		(this->dependency_size)[RDG1PH11] = 8;
+		
+		(this->dependency)[RAG1N][0] = RMSH1;
+		(this->dependency)[RAG1N][1] = RAG1PH11;
+		(this->dependency)[RAG1N][2] = RAG1N;
+		(this->dependency)[RAG1N][3] = RMSH1N;
+		(this->dependency)[RAG1N][4] = RDG1N;
+		(this->dependency_size)[RAG1N] = 5;
+		
+		(this->dependency)[RDG1N][0] = RMSH1;
+		(this->dependency)[RDG1N][1] = RAG1PH11;
+		(this->dependency)[RDG1N][2] = RAG1N;
+		(this->dependency)[RDG1N][3] = RMSH1N;
+		(this->dependency)[RDG1N][4] = RDG1N;
+		(this->dependency_size)[RDG1N] = 5;
+		
+		(this->dependency)[RMSH7][0] = RPSH7;
+		(this->dependency)[RMSH7][1] = RMDH7;
+		(this->dependency_size)[RMSH7] = 2;
+		
+		(this->dependency)[RMSH7N][0] = RPSH7;
+		(this->dependency)[RMSH7N][1] = RMDH7;
+		(this->dependency_size)[RMSH7N] = 2;
+		
+		(this->dependency)[RAG7PH11][0] = RMSH7;
+		(this->dependency)[RAG7PH11][1] = RAG7PH11;
+		(this->dependency)[RAG7PH11][2] = RAG7N;
+		(this->dependency)[RAG7PH11][3] = RPDH11;
+		(this->dependency)[RAG7PH11][4] = RDDH11;
+		(this->dependency)[RAG7PH11][5] = RAG1PH11;
+		(this->dependency)[RAG7PH11][6] = RAGDPH11;
+		(this->dependency)[RAG7PH11][7] = RDG7PH11;
+		(this->dependency_size)[RAG7PH11] = 8;
+		
+		(this->dependency)[RDG7PH11][0] = RMSH7;
+		(this->dependency)[RDG7PH11][1] = RAG7PH11;
+		(this->dependency)[RDG7PH11][2] = RAG7N;
+		(this->dependency)[RDG7PH11][3] = RPDH11;
+		(this->dependency)[RDG7PH11][4] = RDDH11;
+		(this->dependency)[RDG7PH11][5] = RAG1PH11;
+		(this->dependency)[RDG7PH11][6] = RAGDPH11;
+		(this->dependency)[RDG7PH11][7] = RDG7PH11;
+		(this->dependency_size)[RDG7PH11] = 8;
+		
+		(this->dependency)[RAG7N][0] = RMSH7;
+		(this->dependency)[RAG7N][1] = RAG7PH11;
+		(this->dependency)[RAG7N][2] = RAG7N;
+		(this->dependency)[RAG7N][3] = RMSH7N;
+		(this->dependency)[RAG7N][4] = RDG7N;
+		(this->dependency_size)[RAG7N] = 5;
+		
+		(this->dependency)[RDG7N][0] = RMSH7;
+		(this->dependency)[RDG7N][1] = RAG7PH11;
+		(this->dependency)[RDG7N][2] = RAG7N;
+		(this->dependency)[RDG7N][3] = RMSH7N;
+		(this->dependency)[RDG7N][4] = RDG7N;
+		(this->dependency_size)[RDG7N] = 5;
+		
+		(this->dependency)[RMSD][0] = RPSD;
+		(this->dependency)[RMSD][1] = RMDD;
+		(this->dependency_size)[RMSD] = 2;
+		
+		(this->dependency)[RAGDPH11][0] = RMSD;
+		(this->dependency)[RAGDPH11][1] = RAGDPH11;
+		(this->dependency)[RAGDPH11][2] = RPDH11;
+		(this->dependency)[RAGDPH11][3] = RDDH11;
+		(this->dependency)[RAGDPH11][4] = RAG1PH11;
+		(this->dependency)[RAGDPH11][5] = RAG7PH11;
+		(this->dependency)[RAGDPH11][6] = RDGDPH11;
+		(this->dependency_size)[RAGDPH11] = 7;
+		
+		(this->dependency)[RDGDPH11][0] = RMSD;
+		(this->dependency)[RDGDPH11][1] = RAGDPH11;
+		(this->dependency)[RDGDPH11][2] = RPDH11;
+		(this->dependency)[RDGDPH11][3] = RDDH11;
+		(this->dependency)[RDGDPH11][4] = RAG1PH11;
+		(this->dependency)[RDGDPH11][5] = RAG7PH11;
+		(this->dependency)[RDGDPH11][6] = RDGDPH11;
+		(this->dependency_size)[RDGDPH11] = 7;
+	}
+	
+	~dependency_graph(){
+		delete[] this->dependency_size;
+		for (int i = 0; i < NUM_REACTIONS; i++){
+			delete[] (this->dependency)[i];
+		}
+		delete[] this->dependency;
+	}
+};
 
 struct propensities{
 	void (*prop_funs[NUM_REACTIONS]) (cell&, rates&);

@@ -2,7 +2,7 @@
 #include "structs.hpp"
 #include "init.hpp"
 #include "sim.hpp"
-
+#include "debug.hpp"
 
 using namespace std;
 
@@ -19,7 +19,8 @@ extern terminal* term; // Declared in init.cpp
 */
 int main(int argc, char** argv) {
 	input_params ip;
-	
+	dependency_graph dg;
+	test_dependency_graph(dg);
 }
 
 /* usage prints the usage information and, optionally, an error message and then exits

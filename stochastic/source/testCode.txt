@@ -213,3 +213,58 @@ void propensityRDGDPH11(cell& ce, rates& rs){
 	cout << "Hello! Inside propensityRDGDPH11" << endl;
 }
 
+
+
+/* calc_neighbors_2d calculates a given cell's neighbors in a 2D simulation
+	parameters:
+		sd: the current simulation's data
+	returns: nothing
+	notes:
+		2D simulations use a hexagonal grid of cells indexed like this:
+		 ____  ____  ____  ____
+		/    \/    \/    \/    \
+		| 0  || 1  || 2  || 3  |
+		\____/\____/\____/\____/__
+		   /    \/    \/    \/    \
+		   | 4  || 5  || 6  || 7  |
+		 __\____/\____/\____/\____/
+		/    \/    \/    \/    \
+		| 8  || 9  || 10 || 11 |
+		\____/\____/\____/\____/__
+		   /    \/    \/    \/    \
+		   | 12 || 13 || 14 || 15 |
+		   \____/\____/\____/\____/
+		
+		This function should be called only when necessary due to the time cost; the populated neighbors array should be reused until invalid.
+	todo:
+*/
+void calc_neighbors_2d (sim_data& sd) {
+	for (int i = 0; i < sd.cells_total; i++) {
+		if (i % 2 == 0) {																		// All even column cells
+			sd.neighbors[i][0] = (i - sd.width_total + sd.cells_total) % sd.cells_total;			// Top
+			sd.neighbors[i][1] = (i - sd.width_total + 1 + sd.cells_total) % sd.cells_total;		// Top-right
+			sd.neighbors[i][2] = (i + 1) % sd.cells_total;											// Bottom-right
+			sd.neighbors[i][3] = (i + sd.width_total) % sd.cells_total;								// Bottom
+			if (i % sd.width_total == 0) {														// Left edge
+				sd.neighbors[i][4] = i + sd.width_total - 1;										// Bottom-left
+				sd.neighbors[i][5] = (i - 1 + sd.cells_total) % sd.cells_total;						// Top-left
+			} else {																			// Not a left edge
+				sd.neighbors[i][4] = i - 1;															// Bottom-left
+				sd.neighbors[i][5] = (i - sd.width_total - 1 + sd.cells_total) % sd.cells_total;	// Top-left
+			}
+		} else {																				// All odd column cells
+			sd.neighbors[i][0] = (i - sd.width_total + sd.cells_total) % sd.cells_total;			// Top
+			if (i % sd.width_total == sd.width_total - 1) {											// Right edge
+				sd.neighbors[i][1] = i - sd.width_total + 1;										// Top-right
+				sd.neighbors[i][2] = (i + 1) % sd.cells_total;										// Bottom-right
+			} else {																			// Not a right edge
+				sd.neighbors[i][1] = i + 1;															// Top-right
+				sd.neighbors[i][2] = (i + sd.width_total + 1 + sd.cells_total) % sd.cells_total;	// Nottom-right
+			}																					// All odd column cells
+			sd.neighbors[i][3] = (i + sd.width_total) % sd.cells_total;								// Bottom
+			sd.neighbors[i][4] = (i + sd.width_total - 1) % sd.cells_total;							// Bottom-left
+			sd.neighbors[i][5] = (i - 1 + sd.cells_total) % sd.cells_total;							// Top-left
+		}
+	}
+}
+

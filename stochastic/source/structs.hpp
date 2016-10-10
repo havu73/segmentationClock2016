@@ -8,7 +8,7 @@
 #include <fstream> // Needed for ofstream
 #include <string>
 #include <vector> // Needed for concentration levels
-
+#include <queue> // Needed for priority queue inside complete_delay
 #include "macros.hpp"
 
 //use standard name_space here
@@ -261,7 +261,50 @@ struct concentrations{
 	}
 };
 
-struct complete_delay{};
+struct delay_reaction{
+	int reaction_index;
+	double complete_time;
+	delay_reaction(int index, double time){
+		this->reaction_index = index;
+		this->complete_time = time;
+	}
+};
+
+struct compare_sooner_completion{
+	bool operator()(delay_reaction& lhs, delay_reaction& rhs){
+		return (lhs.complete_time >= rhs.complete_time);
+	}
+};
+
+struct complete_delay{
+	priority_queue<delay_reaction, vector<delay_reaction>, compare_sooner_completion>* pq;
+	complete_delay(){
+		this->pq = new priority_queue<delay_reaction, vector<delay_reaction>, compare_sooner_completion>;
+	}
+	
+	~complete_delay(){
+		delete this->pq;
+	}
+	
+	bool is_empty(){
+		return (this->pq)->empty();
+	}
+	
+	// return the time of the soonest complete delay reaction
+	// need to ensure that the queue is not empty before calling this function
+	double see_soonest(){ 
+		return ((this->pq)->top()).complete_time;
+	}
+	
+	void complete_soonest(){
+		(this->pq)->pop();
+	}
+	
+	void initiate_delay(int function_index, double next_complete){
+		delay_reaction dr (function_index, next_complete);
+		(this->pq)->push(dr);
+	}
+};
 
 struct rates {
 	//rates bases and rates for mutants

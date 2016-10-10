@@ -19,8 +19,8 @@ extern terminal* term; // Declared in init.cpp
 */
 int main(int argc, char** argv) {
 	input_params ip;
-	dependency_graph dg;
-	test_dependency_graph(dg);
+	complete_delay cdS; // S is the denotion in the paper about reaction method for delay reactions priority queue
+	test_complete_delay(cdS);
 }
 
 /* usage prints the usage information and, optionally, an error message and then exits

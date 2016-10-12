@@ -133,6 +133,9 @@ struct input_params{
 	streambuf* cout_orig; // cout's original buffer to be restored at program completion
 	ofstream* null_stream; // A stream to /dev/null that cout is redirected to if quiet mode is set
 	
+	// number of cells in the embryo
+	int num_cells;
+	
 	input_params(){
 		// IO files
 		this->params_file = new char[30];
@@ -179,6 +182,9 @@ struct input_params{
 		this->no_color = false;
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
+		
+		// number of cells in the embryo
+		this->num_cells = 16;
 	}
 	
 	~input_params(){
@@ -381,6 +387,83 @@ struct cell{
 		delete [] this->next_internal;
 		delete [] this->current_internal;
 		delete this->cdelay;
+	}
+};
+
+struct embryo{
+	cell ** cell_list;
+	int ** neighbors;
+	int num_cells;
+	
+	embryo(input_params& ip){
+		this->num_cells = ip.num_cells;
+		this->cell_list = new cell * [this->num_cells];
+		for (int i = 0; i < num_cells; i++){
+			this->cell_list [i] = new cell(i, ip);
+		}
+		this->neighbors = new int* [this->num_cells];
+		
+		if (this->num_cells == 2){
+			for (int i = 0; i < num_cells; i++){
+				(this->neighbors)[i] = new int [1];
+			}
+		}
+		if (this->num_cells == 16){
+			for (int i = 0; i < this->num_cells; i++){
+				(this->neighbors)[i] = new int [MAX_NEIGHBORS];
+				memset((this->neighbors)[i], 0, sizeof(int) * MAX_NEIGHBORS);
+			}
+		}
+		this->construct_neighbors();
+	}
+	
+	void construct_neighbors(){
+		if (this->num_cells == 2){
+			(this->neighbors)[0][0] = 1;
+			(this->neighbors)[1][0] = 0;
+		}
+		else if(this->num_cells == 16){
+			int zero [] = {1,4,3,7,12,13};
+			int one [] = {0,4,5,2,12,13};
+			int two [] = {1,3,5,6,13,14};
+			int three [] = {2,6,7,14,15,0};
+			int four [] = {0,1,5,9,8,7};
+			int five [] = {1,2,6,4,9,10};
+			int six [] = {2,3,7,11,10,5};
+			int seven [] = {3,6,11,0,4,8};
+			int eight [] = {4,9,12,7,11,15};
+			int nine [] = {4,5,10,13,12,8};
+			int ten [] = {5,6,11,14,13,9};
+			int eleven [] = {6,7,8,15,14,10};
+			int twelve [] = {8,9,13,1,0,15};
+			int thirteen [] = {9,10,14,2,1,12};
+			int fourteen [] = {10,11,15,3,2,13};
+			int fifteen [] = {11,8,12,3,2,14};
+			memcpy((this->neighbors)[0], zero, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[1], one, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[2], two, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[3], three, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[4], four, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[5], five, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[6], six, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[7], seven, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[8], eight, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[9], nine, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[10], ten, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[11], eleven, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[12], twelve, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[13], thirteen, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[14], fourteen, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[15], fifteen, sizeof(int) * MAX_NEIGHBORS);
+		}
+	}
+	
+	~embryo(){
+		delete [] this->cell_list;
+		for (int i = 0; i < this->num_cells; i++){
+			delete [] this->neighbors[i];
+		}
+		delete [] this->neighbors;
 	}
 };
 

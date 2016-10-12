@@ -23,3 +23,14 @@ void test_complete_delay(complete_delay& cdS){
 	}
 	cout << endl;
 }
+
+
+void test_embryo_neighbor_network(input_params& ip){
+	embryo em(ip);
+	for (int i = 0; i < ip.num_cells; i++){
+		for (int j = 0; j < MAX_NEIGHBORS; j++){
+			cout << (em.neighbors)[i][j] << "  ";
+		}
+		cout << endl;
+	}
+}

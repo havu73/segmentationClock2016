@@ -18,7 +18,10 @@ extern terminal* term; // Declared in init.cpp
 	todo:
 */
 int main(int argc, char** argv) {
+	
 	input_params ip;
+	test_embryo_neighbor_network(ip);
+	/*
 	init_terminal();
 	accept_input_params (argc, argv, ip);
 	check_input_params(ip);
@@ -33,6 +36,7 @@ int main(int argc, char** argv) {
 	// declare input_data objects based on users' input about input file names. The buffer of these objects is empty now, and will be filled in right after this declaration section
 	input_data params_data(ip.params_file);
 	input_data ranges_data(ip.ranges_file);
+	*/
 	
 }
 

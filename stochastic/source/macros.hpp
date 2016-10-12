@@ -1,6 +1,8 @@
 #ifndef MACROS_HPP
 #define MACROS_HPP
 
+// NEIGHBOR NETWORK PARAMETERS
+#define MAX_NEIGHBORS	6	// each cell has maximum 6 neighbors	
 // STATES
 #define MH1		0 	//mRNA Her1
 #define MH7		1 	//mRNA Her7

@@ -8,27 +8,27 @@ int main(int argc, char** argv) {
 	concentrations cons(ip);
 	
 	for (int i = 0; i < 4; i++){
-		(*(cons.cons_data)[MH1])[i] = i;
-		(*(cons.cons_data)[MH7])[i] = i;
-		(*(cons.cons_data)[MD])[i] = i;
-		(*(cons.cons_data)[PH1])[i] = i;
-		(*(cons.cons_data)[PH1])[i] = i;
+		(*(cons.cons_record)[MH1])[i] = i;
+		(*(cons.cons_record)[MH7])[i] = i;
+		(*(cons.cons_record)[MD])[i] = i;
+		(*(cons.cons_record)[PH1])[i] = i;
+		(*(cons.cons_record)[PH1])[i] = i;
 	}
 	
 	for (int i = 1; i < 3; i++){
-		cout << (*(cons.cons_data)[MH1])[i] << endl;
-		cout << (*(cons.cons_data)[MH7])[i] << endl;
-		cout << (*(cons.cons_data)[MD])[i] << endl;
-		cout << (*(cons.cons_data)[PH1])[i] << endl;
-		cout << (*(cons.cons_data)[PH1])[i] << endl;
+		cout << (*(cons.cons_record)[MH1])[i] << endl;
+		cout << (*(cons.cons_record)[MH7])[i] << endl;
+		cout << (*(cons.cons_record)[MD])[i] << endl;
+		cout << (*(cons.cons_record)[PH1])[i] << endl;
+		cout << (*(cons.cons_record)[PH1])[i] << endl;
 	}
 	cons.reset();
 	for (int i = 1; i < 3; i++){
-		cout << (*(cons.cons_data)[MH1])[i] << endl;
-		cout << (*(cons.cons_data)[MH7])[i] << endl;
-		cout << (*(cons.cons_data)[MD])[i] << endl;
-		cout << (*(cons.cons_data)[PH1])[i] << endl;
-		cout << (*(cons.cons_data)[PH1])[i] << endl;
+		cout << (*(cons.cons_record)[MH1])[i] << endl;
+		cout << (*(cons.cons_record)[MH7])[i] << endl;
+		cout << (*(cons.cons_record)[MD])[i] << endl;
+		cout << (*(cons.cons_record)[PH1])[i] << endl;
+		cout << (*(cons.cons_record)[PH1])[i] << endl;
 	}
 }
 

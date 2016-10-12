@@ -17,7 +17,8 @@ void test_complete_delay(complete_delay& cdS){
 	cdS.initiate_delay(3, 56.7);
 	cout << "Testing complete_delay priority queue... " ; 
 	while (! cdS.is_empty()){
-		cout << cdS.see_soonest() << "  ";
+		cout << cdS.see_soonest() << "---";
+		cout << cdS.soonest_reaction() << "   ";
 		cdS.complete_soonest();
 	}
 	cout << endl;

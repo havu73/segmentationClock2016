@@ -93,17 +93,13 @@ struct input_params{
 	// Input and output files' paths and names (either absolute or relative)
 	char* params_file; // The path and name of the parameter sets file, default=input.params
 	bool read_params; // Whether or not the read the parameter sets file, default=false
-	char* gradients_file; // The path and name of the gradients file, default=none
-	bool read_gradients; // Whether or not to read the gradients file, default=false
 	char* ranges_file; // The path and name of the parameter ranges file, default=none
 	bool read_ranges; // Whether or not to read the ranges file, default=false
-	char* perturb_file; // The path and name of the perturbation file, default=none
-    bool read_perturb; // Whether or not to read the perturbation file, default=false
 	
 	// What states whose concentrations to store
 	int* print_states; // list of indices of states that we want to store concentrations over time for plotting and testing
 	int num_print_states; // number of states to print the concentrations over time
-	bool print_cons; // whther or not program is requested to print concentrations over time. False when the size of this->print_states is 0 
+	bool print_cons; // whther or not program is requested to print concentrations over time. False when ip->num_print_states = 0 and users do not specify to print the default MH1, MH7, MD; 
 	char* out_dir; // The path of the output directory for concentrations or oscillation features, default=none	
 	
 	// Sets
@@ -121,7 +117,9 @@ struct input_params{
 	bool print_seeds; // Whether or not to print the seeds used to the seed file
 	
 	// Mutant parameters
-	int * mutants; // List of index of mutants that users want to simulate and test, always need to have wildtype in it
+	int * mutants; // List of index of mutants that users want to simulate and test. Default : all possible mutants
+	int num_mutants; // number of mutants to be simulated. Default = NUM_MUTANTS
+	int max_cond_score; // maximum scores when all conditions specified by users are passed.
 	
 	// Piping data
 	bool piping; // Whether or not input and output should be piped (as opposed to written to disk), default=false
@@ -131,6 +129,7 @@ struct input_params{
 	// Output stream data
 	bool verbose; // Whether or not the program is verbose, i.e. prints many messages about program and simulation state, default=false
 	bool quiet; // Whether or not the program is quiet, i.e. redirects cout to /dev/null, default=false
+	bool no_color; // Whether or not to print the terminal with colors. Deafult = false (include colors)
 	streambuf* cout_orig; // cout's original buffer to be restored at program completion
 	ofstream* null_stream; // A stream to /dev/null that cout is redirected to if quiet mode is set
 	
@@ -140,10 +139,6 @@ struct input_params{
 		this->read_params = false;
 		this->ranges_file = new char [30];
 		this->read_ranges = false;		
-		this->gradients_file = new char[30];
-		this->read_gradients = false;
-		this->perturb_file = new char [30];
-		this->read_perturb = false; 
 		
 		// printing concentrations over time
 		this->print_states = 0; // NULL, need to be initialzied using new int[size] later if users want to print
@@ -166,7 +161,12 @@ struct input_params{
 		this->print_seeds = false;		
 		
 		//mutants
-		this->mutants = 0; // NULL
+		this->mutants = new int [NUM_MUTANTS]; // NULL
+		for (int i = 0; i< NUM_MUTANTS; i++){
+			(this->mutants)[i] = i;
+		}
+		this->num_mutants = NUM_MUTANTS;
+		this->max_cond_score = TOTAL_SC;
 		
 		//piping data
 		this->piping = false;
@@ -176,6 +176,7 @@ struct input_params{
 		//output stream data
 		this->verbose = false;
 		this->quiet = false;
+		this->no_color = false;
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
 	}
@@ -183,10 +184,9 @@ struct input_params{
 	~input_params(){
 		delete [] this->params_file;
 		delete [] this->ranges_file;
-		delete [] this->perturb_file;
-		delete [] this->gradients_file;
 		delete [] this->mutants;
 		delete [] this->seed_file;
+		//delete [] this->print_states;
 		delete this->null_stream;
 		delete [] this->out_dir;
 		if (this->print_states != 0){
@@ -197,11 +197,13 @@ struct input_params{
 
 struct concentrations{
 	bool initialized; // Whether or not this struct's data have been initialized
-	vector<int>** cons_data; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
-							 // Most vectors have length 1, aka we do not care about its progression over time. 
-						     // For some states that users require to keep tract of, we will keep record of all cahnges in concentrations  over time
-	vector<double> ** time_data; 	// a list of (#print_states) vectors recording at what time is the concentration of each states that we keep record of
-	
+	int * current_cons;
+	double * last_change_time;
+	vector<int>** cons_record; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
+							   // Needed to keep records of concentrations of some states over time
+	vector<double> ** time_record; 	// a list of (#print_states) vectors recording time points 
+									// that the concentration of each states that we keep record of is recorded
+	int num_records;
 	concentrations(){
 		this->initialized = false;
 	}
@@ -215,49 +217,45 @@ struct concentrations{
 			this->reset();
 		}
 		else{
-			this->cons_data = new vector<int>* [NUM_STATES];
-			this->time_data = new vector<double>* [NUM_KEEP_STATES + ip.num_print_states];
-			int time_index = 0;
-			int keep_index = 0;
-			for (int i = 0; i < NUM_STATES; i++){
-				if (i == KEEPMH1 || i == KEEPMH7 || i == KEEPMD){
-					(this->cons_data)[i] = new vector<int>(40000, 0); // we want to keep tract 40000
-					(this->time_data)[time_index] = new vector<double>(40000, 0);
-					time_index ++; 
-				}
-				else if (ip.num_print_states > 0 && keep_index < ip.num_print_states && i == ip.print_states[keep_index]){
-					(this->cons_data)[i] = new vector<int>(40000,0);
-					(this->time_data)[time_index] = new vector<double>(40000,0);
-					time_index ++;
-					keep_index ++;
-				}
-				else{
-					(this->cons_data)[i] = new vector<int>(1,0);
-				}
+			this->num_records = NUM_KEEP_STATES + ip.num_print_states;
+			this->current_cons = new int [NUM_STATES];
+			this->last_change_time = new double [NUM_STATES];
+			this->cons_record = new vector<int> * [NUM_KEEP_STATES + ip.num_print_states];
+			this->time_record = new vector<double> * [NUM_KEEP_STATES + ip.num_print_states];
+
+			for (int i = 0; i < NUM_KEEP_STATES; i++){
+				(this->cons_record)[i] = new vector<int>(40000, 0);
+				(this->time_record)[i] = new vector<double>(40000, 0);
 			}
+			
+			for (int i = 0; i < ip.num_print_states; i++){
+				(this->cons_record)[i + NUM_KEEP_STATES] = new vector<int>(40000, 0);
+				(this->time_record)[i + NUM_KEEP_STATES] = new vector<double>(40000, 0); 
+			}
+			
 			this->initialized = true;
 		}
 	}
 	
 	void reset(){
-		for (int i = 0; i < NUM_STATES; i++){
-			memset(&((*((this->cons_data)[i]))[0]), 0, sizeof(int) * ((this->cons_data)[i])->size());
-		}
+		memset(this->current_cons, 0, sizeof(int) * NUM_STATES);
+		memset(this->last_change_time, 0, sizeof(double) * NUM_STATES);
 		
-		int time_size = sizeof(this->time_data) / sizeof((this->time_data)[0]);
-		for (int i = 0; i < time_size; i++){
-			memset(&((*((this->time_data)[i]))[0]), 0, sizeof(int) * ((this->time_data)[i])->size());
+		for (int i = 0; i < (this->num_records); i++){
+			memset(&((*((this->cons_record)[i]))[0]), 0, sizeof(int) * ((this->cons_record)[i])->size());
+			memset(&((*((this->time_record)[i]))[0]), 0, sizeof(int) * ((this->time_record)[i])->size());
 		}
 	}
 	
 	~concentrations(){
-		for (int i = 0; i < NUM_STATES; i++){
-			delete (this->cons_data)[i];
+		delete [] this->current_cons;
+		delete [] this->last_change_time;
+		for (int i = 0; i < (this->num_records); i++){
+			delete (this->cons_record)[i];
+			delete (this->time_record)[i];
 		}
-		int time_size = sizeof(this->time_data) / sizeof((this->time_data)[0]);
-		for (int i = 0; i < time_size; i++){
-			delete (this->time_data)[i];
-		}
+		delete [] this->cons_record;
+		delete [] this->time_record;
 	}
 };
 
@@ -294,6 +292,10 @@ struct complete_delay{
 	// need to ensure that the queue is not empty before calling this function
 	double see_soonest(){ 
 		return ((this->pq)->top()).complete_time;
+	}
+	
+	int soonest_reaction(){
+		return ((this->pq)->top()).reaction_index;
 	}
 	
 	void complete_soonest(){

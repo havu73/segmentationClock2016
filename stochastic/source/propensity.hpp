@@ -1,50 +1,50 @@
 #ifndef PROPENSITY_HPP
 #define PROPENSITY_HPP
 #include "structs.hpp"
-void propensityRPSH1(cell&, rates&);
-void propensityRPSH7(cell&, rates&);
-void propensityRPSD(cell&, rates&);
+void propensityRPSH1(embryo&, int, rates&);
+void propensityRPSH7(embryo&, int, rates&);
+void propensityRPSD(embryo&, int, rates&);
 
-void propensityRPDH1(cell&, rates&);
-void propensityRPDH7(cell&, rates&);
-void propensityRPDD(cell&, rates&);
-void propensityRPDH11(cell&, rates&);
-void propensityRPDH17(cell&, rates&);
-void propensityRPDH77(cell&, rates&);
+void propensityRPDH1(embryo&, int, rates&);
+void propensityRPDH7(embryo&, int, rates&);
+void propensityRPDD(embryo&, int, rates&);
+void propensityRPDH11(embryo&, int, rates&);
+void propensityRPDH17(embryo&, int, rates&);
+void propensityRPDH77(embryo&, int, rates&);
 
-void propensityRDAH11(cell&, rates&);
-void propensityRDAH17(cell&, rates&);
-void propensityRDAH77(cell&, rates&);
+void propensityRDAH11(embryo&, int, rates&);
+void propensityRDAH17(embryo&, int, rates&);
+void propensityRDAH77(embryo&, int, rates&);
 
-void propensityRDDH11(cell&, rates&);
-void propensityRDDH17(cell&, rates&);
-void propensityRDDH77(cell&, rates&);
+void propensityRDDH11(embryo&, int, rates&);
+void propensityRDDH17(embryo&, int, rates&);
+void propensityRDDH77(embryo&, int, rates&);
 
-void propensityRMDH1(cell&, rates&);
-void propensityRMDH7(cell&, rates&);
-void propensityRMDD(cell&, rates&);
+void propensityRMDH1(embryo&, int, rates&);
+void propensityRMDH7(embryo&, int, rates&);
+void propensityRMDD(embryo&, int, rates&);
 
-void propensityRMSH1(cell&, rates&);
-void propensityRMSH1N(cell&, rates&);
+void propensityRMSH1(embryo&, int, rates&);
+void propensityRMSH1N(embryo&, int, rates&);
 
-void propensityRAG1PH11(cell&, rates&);
-void propensityRDG1PH11(cell&, rates&);
+void propensityRAG1PH11(embryo&, int, rates&);
+void propensityRDG1PH11(embryo&, int, rates&);
 
-void propensityRAG1N(cell&, rates&);
-void propensityRDG1N(cell&, rates&);
+void propensityRAG1N(embryo&, int, rates&);
+void propensityRDG1N(embryo&, int, rates&);
 
-void propensityRMSH7(cell&, rates&);
-void propensityRMSH7N(cell&, rates&);
+void propensityRMSH7(embryo&, int, rates&);
+void propensityRMSH7N(embryo&, int, rates&);
 
-void propensityRAG7PH11(cell&, rates&);
-void propensityRDG7PH11(cell&, rates&);
+void propensityRAG7PH11(embryo&, int, rates&);
+void propensityRDG7PH11(embryo&, int, rates&);
 
-void propensityRAG7N(cell&, rates&);
-void propensityRDG7N(cell&, rates&);
+void propensityRAG7N(embryo&, int, rates&);
+void propensityRDG7N(embryo&, int, rates&);
 
-void propensityRMSD(cell&, rates&);
+void propensityRMSD(embryo&, int, rates&);
 
-void propensityRAGDPH11(cell&, rates&);
-void propensityRDGDPH11(cell&, rates&);
+void propensityRAGDPH11(embryo&, int, rates&);
+void propensityRDGDPH11(embryo&, int, rates&);
 #endif
 

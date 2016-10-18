@@ -4,6 +4,7 @@
 #include "init.hpp" // Function declarations
 #include "io.hpp"
 #include "propensity.hpp"
+#include "reactions.hpp"
 #include "main.hpp"
 #include "memory.hpp"
 using namespace std;
@@ -47,51 +48,99 @@ void init_verbosity (input_params& ip) {
 	}
 }
 
-void init_propensities(propensities& prop){
-	prop.prop_funs[RPSH1] = &propensityRPSH1;
-	prop.prop_funs[RPSH7] = &propensityRPSH7;
-	prop.prop_funs[RPSD] = &propensityRPSD;
+void init_propensities(sim_data& sd){
+	sd.prop_funs[RPSH1] = &propensityRPSH1;
+	sd.prop_funs[RPSH7] = &propensityRPSH7;
+	sd.prop_funs[RPSD] = &propensityRPSD;
 	
-	prop.prop_funs[RPDH1] = &propensityRPDH1;
-	prop.prop_funs[RPDH7] = &propensityRPDH7;
-	prop.prop_funs[RPDD] = &propensityRPDD;
-	prop.prop_funs[RPDH11] = &propensityRPDH11;
-	prop.prop_funs[RPDH17] = &propensityRPDH17;
-	prop.prop_funs[RPDH77] = &propensityRPDH77;
+	sd.prop_funs[RPDH1] = &propensityRPDH1;
+	sd.prop_funs[RPDH7] = &propensityRPDH7;
+	sd.prop_funs[RPDD] = &propensityRPDD;
+	sd.prop_funs[RPDH11] = &propensityRPDH11;
+	sd.prop_funs[RPDH17] = &propensityRPDH17;
+	sd.prop_funs[RPDH77] = &propensityRPDH77;
 	
-	prop.prop_funs[RDAH11] = &propensityRDAH11;
-	prop.prop_funs[RDAH17] = &propensityRDAH17;
-	prop.prop_funs[RDAH77] = &propensityRDAH77;
+	sd.prop_funs[RDAH11] = &propensityRDAH11;
+	sd.prop_funs[RDAH17] = &propensityRDAH17;
+	sd.prop_funs[RDAH77] = &propensityRDAH77;
 	
-	prop.prop_funs[RDDH11] = &propensityRDDH11;
-	prop.prop_funs[RDDH17] = &propensityRDDH17;
-	prop.prop_funs[RDDH77] = &propensityRDDH77;
+	sd.prop_funs[RDDH11] = &propensityRDDH11;
+	sd.prop_funs[RDDH17] = &propensityRDDH17;
+	sd.prop_funs[RDDH77] = &propensityRDDH77;
 	
-	prop.prop_funs[RMDH1] = &propensityRMDH1;
-	prop.prop_funs[RMDH7] = &propensityRMDH7;
-	prop.prop_funs[RMDD] = &propensityRMDD;
+	sd.prop_funs[RMDH1] = &propensityRMDH1;
+	sd.prop_funs[RMDH7] = &propensityRMDH7;
+	sd.prop_funs[RMDD] = &propensityRMDD;
 	
-	prop.prop_funs[RMSH1] = &propensityRMSH1;
-	prop.prop_funs[RMSH1N] = &propensityRMSH1N;
+	sd.prop_funs[RMSH1] = &propensityRMSH1;
+	sd.prop_funs[RMSH1N] = &propensityRMSH1N;
 	
-	prop.prop_funs[RAG1PH11] = &propensityRAG1PH11;
-	prop.prop_funs[RDG1PH11] = &propensityRDG1PH11;
+	sd.prop_funs[RAG1PH11] = &propensityRAG1PH11;
+	sd.prop_funs[RDG1PH11] = &propensityRDG1PH11;
 	
-	prop.prop_funs[RAG1N] = &propensityRAG1N;
-	prop.prop_funs[RDG1N] = &propensityRDG1N;
+	sd.prop_funs[RAG1N] = &propensityRAG1N;
+	sd.prop_funs[RDG1N] = &propensityRDG1N;
 	
-	prop.prop_funs[RMSH7] = &propensityRMSH7;
-	prop.prop_funs[RMSH7N] = &propensityRMSH7N;
+	sd.prop_funs[RMSH7] = &propensityRMSH7;
+	sd.prop_funs[RMSH7N] = &propensityRMSH7N;
 	
-	prop.prop_funs[RAG7PH11] = &propensityRAG7PH11;
-	prop.prop_funs[RDG7PH11] = &propensityRDG7PH11;
+	sd.prop_funs[RAG7PH11] = &propensityRAG7PH11;
+	sd.prop_funs[RDG7PH11] = &propensityRDG7PH11;
 	
-	prop.prop_funs[RAG7N] = &propensityRAG7N;
-	prop.prop_funs[RDG7N] = &propensityRDG7N;
+	sd.prop_funs[RAG7N] = &propensityRAG7N;
+	sd.prop_funs[RDG7N] = &propensityRDG7N;
 	
-	prop.prop_funs[RMSD] = &propensityRMSD;
-	prop.prop_funs[RAGDPH11] = &propensityRAGDPH11;
-	prop.prop_funs[RDGDPH11] = &propensityRDGDPH11;
+	sd.prop_funs[RMSD] = &propensityRMSD;
+	sd.prop_funs[RAGDPH11] = &propensityRAGDPH11;
+	sd.prop_funs[RDGDPH11] = &propensityRDGDPH11;
+}
+
+void init_reactions(sim_data& sd){
+	sd.reac_funs[RPSH1] = &reactionRPSH1;
+	sd.reac_funs[RPSH7] = &reactionRPSH7;
+	sd.reac_funs[RPSD] = &reactionRPSD;
+	
+	sd.reac_funs[RPDH1] = &reactionRPDH1;
+	sd.reac_funs[RPDH7] = &reactionRPDH7;
+	sd.reac_funs[RPDD] = &reactionRPDD;
+	sd.reac_funs[RPDH11] = &reactionRPDH11;
+	sd.reac_funs[RPDH17] = &reactionRPDH17;
+	sd.reac_funs[RPDH77] = &reactionRPDH77;
+	
+	sd.reac_funs[RDAH11] = &reactionRDAH11;
+	sd.reac_funs[RDAH17] = &reactionRDAH17;
+	sd.reac_funs[RDAH77] = &reactionRDAH77;
+	
+	sd.reac_funs[RDDH11] = &reactionRDDH11;
+	sd.reac_funs[RDDH17] = &reactionRDDH17;
+	sd.reac_funs[RDDH77] = &reactionRDDH77;
+	
+	sd.reac_funs[RMDH1] = &reactionRMDH1;
+	sd.reac_funs[RMDH7] = &reactionRMDH7;
+	sd.reac_funs[RMDD] = &reactionRMDD;
+	
+	sd.reac_funs[RMSH1] = &reactionRMSH1;
+	sd.reac_funs[RMSH1N] = &reactionRMSH1N;
+	
+	sd.reac_funs[RAG1PH11] = &reactionRAG1PH11;
+	sd.reac_funs[RDG1PH11] = &reactionRDG1PH11;
+	
+	sd.reac_funs[RAG1N] = &reactionRAG1N;
+	sd.reac_funs[RDG1N] = &reactionRDG1N;
+	
+	sd.reac_funs[RMSH7] = &reactionRMSH7;
+	sd.reac_funs[RMSH7N] = &reactionRMSH7N;
+	
+	sd.reac_funs[RAG7PH11] = &reactionRAG7PH11;
+	sd.reac_funs[RDG7PH11] = &reactionRDG7PH11;
+	
+	sd.reac_funs[RAG7N] = &reactionRAG7N;
+	sd.reac_funs[RDG7N] = &reactionRDG7N;
+	
+	sd.reac_funs[RMSD] = &reactionRMSD;
+	
+	sd.reac_funs[RAGDPH11] = &reactionRAGDPH11;
+	sd.reac_funs[RDGDPH11] = &reactionRDGDPH11;
 }
 
 /* 
@@ -142,6 +191,7 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 			} else if (option_set(option, "-od", "--output-directory")){
 				ensure_nonempty(option, value);
 				store_filename(&(ip.out_dir), value);
+				ip.has_out_dir = true; 
 			} else if (option_set(option, "-ns", "--num-parameter-sets")) {
 				ensure_nonempty(option, value);
 				ip.num_sets = atoi(value);
@@ -205,14 +255,19 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 					term->set_verbose_streambuf(ip.null_stream->rdbuf());
 				}
 				i--;
-			} else if (option_set(option, "-nc", "--no-color")) {
-				free(term->blue);
-				free(term->red);
-				free(term->reset);
-				strcpy(term->blue, "");
-				strcpy(term->red, "");
-				strcpy(term->reset, "");
-				i--;
+			} else if (option_set(option, "-nc", "--num-cells")) {
+				ensure_nonempty(option, value);
+				int num_cells = atoi(value);
+				if (num_cells <= 1){
+					usage("The number of cells in the system need to be at least 2");
+				}
+				ip.num_cells = num_cells;
+			} else if (option_set(option, "-cdg", "--check-done-granularity")){
+				ensure_nonempty(option, value);
+				ip.check_done_granularity = atoi(value);
+			}else if (option_set(option, "-rg", "--record-granularity")){
+				ensure_nonempty(option, value);
+				ip.record_granularity = atoi(value);
 			} else if (option_set(option, "-h", "--help")) {
 				usage("");
 				i--;
@@ -318,6 +373,15 @@ void check_input_params (input_params& ip){
 	if (ip.reset_seed) {
 		init_seeds(ip, 0, false, false);
 	}
+	if (ip.check_done_granularity <= 0){
+		usage("Check_done_granularity needs to be at least 1.");
+	}
+	if (ip.record_granularity <= 0){
+		usage("Record_granularity needs to be at least 1.");
+	}
+	if (ip.check_done_granularity % ip.record_granularity != 0){
+		usage("Check_done_granurality needs to be divisible by record_granularity");
+	}
 }
 
 /* Seeds is used in generating random parameter if users passed in ranges file.
@@ -369,3 +433,60 @@ int generate_seed () {
 }
 
 void calculate_max_cond_score (input_params& ip){}
+
+
+/* Read in the parameter set from a file/ a range file or through piping (method used by sres)
+ * The functions that this function call can be found in io.cpp
+ * Params: ip
+ * 		   params_data: input_data for users' parameters file, declared in main.cpp
+ * 		   pr: declared in main.cpp
+ * 		   ranges_date: input_data for users' ranges file, declared in main.cpp 
+ */
+void read_sim_params(input_params& ip, parameters& pr, input_data& params_data, input_data& ranges_data){
+	cout << term->blue;
+	// OPTION 1: PIPING
+	if (ip.piping) { 
+		cout << "Reading pipe " << term->reset << "(file descriptor " << ip.pipe_in << ") . . . ";
+		read_pipe(pr, ip); 
+		term->done();
+	// OPTION 2: PARAMETER FILE
+	} else if (ip.read_params) { // If the user specified a parameter sets input file
+		read_file(&params_data);
+		for (int i = 0; i < ip.num_sets; i++) {
+			if (params_data.index < params_data.size) { // Parse only as many lines as specified, even if the file is longe
+				if(!parse_param_line(pr, i , params_data.buffer, params_data.index)) { // Parse each line until the file is empty or the required number of sets have been found
+					ip.num_sets = i;
+				}
+			} else {
+				ip.num_sets = i;
+			}
+		}
+	// OPTION 3: RANGES FILE
+	} else if (ip.read_ranges) { // If the user specified a ranges input file to generate random numbers from
+		cout << "Generating " << term->reset << ip.num_sets << " random parameter sets according to the ranges in " << ranges_data.filename << " . . ." << endl;
+		cout << "  ";
+		read_file(&ranges_data);
+		pair <double, double> ranges[NUM_RATES];
+		parse_ranges_file(ranges, ranges_data.buffer); // get the ranges from users' ranges file
+		srand(ip.pseed);
+		for (int i = 0; i < ip.num_sets; i++) {
+			for (int j = 0; j < NUM_RATES; j++) {
+				pr.data[i][j] = random_double(ranges[j]); // Generate random numbers as paramters within the ranges
+			}
+		}
+		term->done();
+	} else {
+		usage("Parameter must be piped in via -I or --pipe-in, read from a file via -i or --params-file, or generated from a ranges file and number of sets via -R or --ranges-file and -p or --parameter-sets, respectively.");
+	} 
+}
+
+/* random_double generates a random double in the range specified by the given pair of doubles
+	parameters:
+		range: a pair of doubles that specifies the lower and upper bounds in that order
+	returns: the random double
+	notes:
+	todo:
+*/
+double random_double (pair<double, double> range) {
+	return range.first + (range.second - range.first) * rand() / (RAND_MAX + 1.0);
+}

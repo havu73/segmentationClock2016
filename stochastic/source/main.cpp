@@ -18,13 +18,12 @@ extern terminal* term; // Declared in init.cpp
 	todo:
 */
 int main(int argc, char** argv) {
-	
 	input_params ip;
-	test_embryo_neighbor_network(ip);
-	/*
+	
 	init_terminal();
 	accept_input_params (argc, argv, ip);
 	check_input_params(ip);
+	
 	init_verbosity(ip);
 	
 	// Calculate the maximum conditional score that we can get
@@ -36,7 +35,12 @@ int main(int argc, char** argv) {
 	// declare input_data objects based on users' input about input file names. The buffer of these objects is empty now, and will be filled in right after this declaration section
 	input_data params_data(ip.params_file);
 	input_data ranges_data(ip.ranges_file);
-	*/
+	
+	// process parameters
+	parameters pr(ip.num_sets);
+	read_sim_params(ip, pr, params_data, ranges_data);
+	
+	simulate_all_params_sets(ip, pr);
 	
 }
 
@@ -57,23 +61,26 @@ void usage (const char* message) {
 		cout << term->red << message << term->reset << endl << endl;
 	}
 	cout << "Usage: [-option [value]]. . . [--option [value]]. . ." << endl;
-	cout << "-i,  --input-params-file  [filename]   : the relative filename of the parameter sets input file, default=none" << endl;
-	cout << "-r,  --ranges-file        [filename]   : the relative filename of the parameter ranges input file, default=none" << endl;
-	cout << "-ps, --print-states	   [string]		: the space separated list of state indices that users want to keep track of over time. MH1, MH7, MD are default. Ex: -ps \"4 5 6\"" << endl;
-	cout << "-pc, --print-cons         [N/A]        : print concentration values to the specified output directory, default=false" << endl;
-	cout << "-od, --output-directory   [directory]  : the relative directory where output of the program is saved, default=none" << endl;
-	cout << "-ns, --num-parameter-sets [int]        : the number of parameters for which to simulate the model, min=1, default=1" << endl;
-	cout << "-st, --total-time         [int]        : the number of minutes to simulate before ending, min=1, default=600" << endl;
-	cout << "-s,  --seed               [int]        : the seed to generate random numbers, min=1, default=generated from the time and process ID" << endl;
-	cout << "-rs, --reset-seed         [N/A]        : reset the seed after each parameter set so the initial seed is used each time, default=unused" << endl;
-	cout << "-paseed, --parameters-seed[int]        : the seed to generate random parameter sets, min=1, default=generated from the time and process ID" << endl;
-	cout << "-prseed, --print-seeds    [filename]   : the relative filename of the seed output file, default=none" << endl;
-	cout << "-m,  --mutants            [int]        : the space-separated list of mutants indices to run for each parameter set, default= list of all possible mutants" << endl;
-	cout << "-pi, --pipe-in            [file desc.] : the file descriptor to pipe data from (usually passed by the sampler), default=none" << endl;
-	cout << "-po, --pipe-out           [file desc.] : the file descriptor to pipe data into (usually passed by the sampler), default=none" << endl;
-	cout << "-v,  --verbose            [N/A]        : print detailed messages about the program and simulation state, default=unused" << endl;
-	cout << "-q,  --quiet              [N/A]        : hide the terminal output, default=unused" << endl;
-	cout << "-nc, --no-color           [N/A]        : disable coloring the terminal output, default=unused" << endl;
+	cout << "-i,  --input-params-file  	[filename]   : the relative filename of the parameter sets input file, default=none" << endl;
+	cout << "-r,  --ranges-file        	[filename]   : the relative filename of the parameter ranges input file, default=none" << endl;
+	cout << "-ps, --print-states	   	[string]		: the space separated list of state indices that users want to keep track of over time. MH1, MH7, MD are default. Ex: -ps \"4 5 6\"" << endl;
+	cout << "-pc, --print-cons         	[N/A]        : print concentration values to the specified output directory, default=false" << endl;
+	cout << "-od, --output-directory   	[directory]  : the relative directory where output of the program is saved, default=none" << endl;
+	cout << "-ns, --num-parameter-sets 	[int]        : the number of parameters for which to simulate the model, min=1, default=1" << endl;
+	cout << "-st, --total-time         	[int]        : the number of minutes to simulate before ending, min=1, default=600" << endl;
+	cout << "-s,  --seed               	[int]        : the seed to generate random numbers, min=1, default=generated from the time and process ID" << endl;
+	cout << "-rs, --reset-seed         	[N/A]        : reset the seed after each parameter set so the initial seed is used each time, default=unused" << endl;
+	cout << "-paseed, --parameters-seed	[int]        : the seed to generate random parameter sets, min=1, default=generated from the time and process ID" << endl;
+	cout << "-prseed, --print-seeds    	[filename]   : the relative filename of the seed output file, default=none" << endl;
+	cout << "-m,  --mutants            	[int]        : the space-separated list of mutants indices to run for each parameter set, default= list of all possible mutants" << endl;
+	cout << "-pi, --pipe-in            	[file desc.] : the file descriptor to pipe data from (usually passed by the sampler), default=none" << endl;
+	cout << "-po, --pipe-out           	[file desc.] : the file descriptor to pipe data into (usually passed by the sampler), default=none" << endl;
+	cout << "-v,  --verbose            	[N/A]        : print detailed messages about the program and simulation state, default=unused" << endl;
+	cout << "-q,  --quiet              	[N/A]        : hide the terminal output, default=unused" << endl;
+	cout << "-nc, --num-cells          	[N/A]        : number of cells in the sytem to simulate. Default = 16" << endl;
+	cout << "-cdg,--check-done-granularity[int] 	 : number of reactions fired in between two times that the program check whether it is done or not. Default = 120" << endl;
+	cout << "-rg, --record-granularity	[int]		 : number of reactions fired in between two times that we record the concentrations of states we care about. Default = 30" << endl;
+	cout << "We require that check-done-granularity and record-granularity are both at least 1, and that check-done-granularity is invisible by record-granularity" << endl;
 	cout << "-l,  --licensing          [N/A]        : view licensing information (no simulations will be run)" << endl;
 	cout << "-h,  --help               [N/A]        : view usage information (i.e. this)" << endl;
 	cout << endl << term->blue << "Example: ./simulation -i parameters.csv --parameters 10 -m 2000 --no-color" << term->reset << endl << endl;

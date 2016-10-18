@@ -2,49 +2,49 @@
 #define REACTIONS_HPP
 #include "structs.hpp"
 
-void reactionRPSH1 (cell&);
-void reactionRPSH7 (cell&);
-void reactionRPSD (cell&);
+void reactionRPSH1 (embryo&, int, sim_data&, rates&, bool);
+void reactionRPSH7 (embryo&, int, sim_data&, rates&, bool);
+void reactionRPSD (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRPDH1 (cell&);
-void reactionRPDH7 (cell&);
-void reactionRPDD (cell&);
-void reactionRPDH11 (cell&);
-void reactionRPDH17 (cell&);
-void reactionRPDH77 (cell&);
+void reactionRPDH1 (embryo&, int, sim_data&, rates&, bool);
+void reactionRPDH7 (embryo&, int, sim_data&, rates&, bool);
+void reactionRPDD (embryo&, int, sim_data&, rates&, bool);
+void reactionRPDH11(embryo&, int, sim_data&, rates&, bool);
+void reactionRPDH17 (embryo&, int, sim_data&, rates&, bool);
+void reactionRPDH77 (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRDAH11 (cell&);
-void reactionRDAH17 (cell&);
-void reactionRDAH77 (cell&);
+void reactionRDAH11 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDAH17 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDAH77 (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRDDH11 (cell&);
-void reactionRDDH17 (cell&);
-void reactionRDDH77 (cell&);
+void reactionRDDH11 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDDH17 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDDH77 (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRMDH1 (cell&);
-void reactionRMDH7 (cell&);
-void reactionRMDD (cell&);
+void reactionRMDH1 (embryo&, int, sim_data&, rates&, bool);
+void reactionRMDH7 (embryo&, int, sim_data&, rates&, bool);
+void reactionRMDD (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRMSH1 (cell&);
-void reactionRMSH1N	(cell&);
+void reactionRMSH1 (embryo&, int, sim_data&, rates&, bool);
+void reactionRMSH1N (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRAG1PH11 (cell&);
-void reactionRDG1PH11 (cell&);
+void reactionRAG1PH11 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDG1PH11 (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRAG1N (cell&);
-void reactionRDG1N (cell&);
+void reactionRAG1N (embryo&, int, sim_data&, rates&, bool);
+void reactionRDG1N (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRMSH7 (cell&);
-void reactionRMSH7N (cell&);
+void reactionRMSH7 (embryo&, int, sim_data&, rates&, bool);
+void reactionRMSH7N (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRAG7PH11 (cell&);
-void reactionRDG7PH11 (cell&);
+void reactionRAG7PH11 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDG7PH11 (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRAG7N (cell&);
-void reactionRDG7N (cell&);
+void reactionRAG7N (embryo&, int, sim_data&, rates&, bool);
+void reactionRDG7N (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRMSD (cell&);
+void reactionRMSD (embryo&, int, sim_data&, rates&, bool);
 
-void reactionRAGDPH11 (cell&);
-void reactionRDGDPH11 (cell&);
+void reactionRAGDPH11 (embryo&, int, sim_data&, rates&, bool);
+void reactionRDGDPH11 (embryo&, int, sim_data&, rates&, bool);
 #endif

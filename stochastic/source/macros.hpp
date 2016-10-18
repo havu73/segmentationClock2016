@@ -141,6 +141,7 @@
 
 #define TOTAL_SC			0
 
+
 // EXIT STATUS
 #define EXIT_SUCCESS			0
 #define EXIT_MEMORY_ERROR		1

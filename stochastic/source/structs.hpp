@@ -101,6 +101,7 @@ struct input_params{
 	int num_print_states; // number of states to print the concentrations over time
 	bool print_cons; // whther or not program is requested to print concentrations over time. False when ip->num_print_states = 0 and users do not specify to print the default MH1, MH7, MD; 
 	char* out_dir; // The path of the output directory for concentrations or oscillation features, default=none	
+	bool has_out_dir; // whether user specify an output directory or not
 	
 	// Sets
 	int num_sets; // The number of parameter sets to simulate, default=1
@@ -129,13 +130,17 @@ struct input_params{
 	// Output stream data
 	bool verbose; // Whether or not the program is verbose, i.e. prints many messages about program and simulation state, default=false
 	bool quiet; // Whether or not the program is quiet, i.e. redirects cout to /dev/null, default=false
-	bool no_color; // Whether or not to print the terminal with colors. Deafult = false (include colors)
 	streambuf* cout_orig; // cout's original buffer to be restored at program completion
 	ofstream* null_stream; // A stream to /dev/null that cout is redirected to if quiet mode is set
 	
 	// number of cells in the embryo
 	int num_cells;
 	
+	// Parameters related to the speed and data collection of the simulation
+	int check_done_granularity; // every 120 reactions fired, we will check each cell and see whether or not they have reached a time point
+									  // above the time we need to simulate
+	int record_granularity;	// Every 30 reactions, we will record the concentrations and time points of states that users want to keep track of 
+	// For efficiency reasons, we require that check_done_granularity is divisible by record_granularity
 	input_params(){
 		// IO files
 		this->params_file = new char[30];
@@ -148,6 +153,7 @@ struct input_params{
 		this->num_print_states = 0;
 		this->print_cons = false;
 		this->out_dir = new char [30];
+		this->has_out_dir = false;
 		
 		//sets
 		this->num_sets = 1;
@@ -179,12 +185,15 @@ struct input_params{
 		//output stream data
 		this->verbose = false;
 		this->quiet = false;
-		this->no_color = false;
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
 		
 		// number of cells in the embryo
 		this->num_cells = 16;
+		
+		// parameters about data transfer and time control of the simulation
+		this->check_done_granularity = 120;
+		this->record_granularity = 30;
 	}
 	
 	~input_params(){
@@ -308,6 +317,16 @@ struct complete_delay{
 		(this->pq)->pop();
 	}
 	
+	void clear(){
+		while(!(this->pq)->empty()){
+			(this->pq)->pop();
+		}
+	}
+	
+	int size(){
+		return (this->pq)->size();
+	}
+	
 	void initiate_delay(int function_index, double next_complete){
 		delay_reaction dr (function_index, next_complete);
 		(this->pq)->push(dr);
@@ -316,23 +335,23 @@ struct complete_delay{
 
 struct rates {
 	//rates bases and rates for mutants
-	double* rates_base;  // Base rates taken from the current parameter set
+	double* data;  // Base rates taken from the current parameter set
 	
 	explicit rates () {
-		this->rates_base = new double [NUM_RATES];
-		memset(this->rates_base, 0, sizeof(double) * NUM_RATES);
+		this->data = new double [NUM_RATES];
+		memset(this->data, 0, sizeof(double) * NUM_RATES);
 	}
 	
 	void clear (){
-		delete [](this->rates_base);
+		delete [](this->data);
 	}
 	
 	void reset(){
-		memset(this->rates_base, 0, sizeof(double) * NUM_RATES);
+		memset(this->data, 0, sizeof(double) * NUM_RATES);
 	}
 	
 	~rates () {
-		delete [](this->rates_base);
+		delete [](this->data);
 	}
 };
 
@@ -379,6 +398,15 @@ struct cell{
 		this->cdelay = new complete_delay();
 		this->absolute_time = 0;
 		this->index = index;
+	}
+	
+	void reset(){
+		(this->cons)->reset();
+		memset(this->propen, 0, sizeof(double) * NUM_REACTIONS);
+		memset(this->next_internal, 0, sizeof(double) * NUM_REACTIONS);
+		memset(this->current_internal, 0, sizeof(double) * NUM_REACTIONS);
+		this->absolute_time = 0;
+		(this->cdelay)->clear();
 	}
 	
 	~cell(){
@@ -458,6 +486,12 @@ struct embryo{
 		}
 	}
 	
+	void reset(){
+		for (int i = 0; i < this->num_cells; i ++){
+			((this->cell_list)[i])->reset();
+		}
+	}
+	
 	~embryo(){
 		delete [] this->cell_list;
 		for (int i = 0; i < this->num_cells; i++){
@@ -467,13 +501,26 @@ struct embryo{
 	}
 };
 
-struct dependency_graph{
+
+
+
+struct sim_data{
+	void (*reac_funs[NUM_REACTIONS]) (embryo&, int, sim_data&, rates&, bool);
+	void (*prop_funs[NUM_REACTIONS]) (embryo&, int, rates&);
 	int ** dependency; // 2D arrays containing the indicies of reactions that if a reactions occur, would need to recalculate the propensity function
 	// Notes: there are two reactions: RPSD and RPDD are reactions that we also need to calculate the neighbor cells too
 	
 	int * dependency_size; // 1D array containing the size of each array of dependent reactions for each reaction
 						   // Ex: reaction 1 happens  requires updating 2 other reactions' propensity --> dependency_size[0] = 2
-	dependency_graph(){
+	
+	sim_data(){
+		// 1. reac_funs
+		memset(this->reac_funs, 0, sizeof(this->reac_funs));
+		
+		// 2. propensity functions
+		memset(this->prop_funs, 0, sizeof(this->reac_funs));
+		
+		// 3. dependency graph
 		this->dependency = new int* [NUM_REACTIONS];
 		this->dependency_size = new int [NUM_REACTIONS];
 		for (int i = 0; i < NUM_REACTIONS; i++){
@@ -700,27 +747,13 @@ struct dependency_graph{
 		(this->dependency)[RDGDPH11][6] = RDGDPH11;
 		(this->dependency_size)[RDGDPH11] = 7;
 	}
-	
-	~dependency_graph(){
+
+	~sim_data(){
 		delete[] this->dependency_size;
 		for (int i = 0; i < NUM_REACTIONS; i++){
 			delete[] (this->dependency)[i];
 		}
 		delete[] this->dependency;
-	}
-};
-
-struct propensities{
-	void (*prop_funs[NUM_REACTIONS]) (cell&, rates&);
-	dependency_graph * dgraph;
-	
-	propensities(dependency_graph* dg){
-		memset(this->prop_funs, 0, sizeof(this->prop_funs));
-		this->dgraph = dg;
-	}
-	
-	~propensities(){
-		
 	}
 };
 

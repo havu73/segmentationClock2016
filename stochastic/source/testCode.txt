@@ -268,3 +268,87 @@ void calc_neighbors_2d (sim_data& sd) {
 	}
 }
 
+
+Give this to Prof. Ay
+11.758___2.02846___0.280236___0.779468___0.629671___1.51887___3.05666___0.387333___0.386698___0.0675373___0.95841___0.655049___0.185167___3.36471___2.92879___0.635444___0.398764___4.86677___0.958636___2.70542___0.873504___0.375752___0.529369___0.0721015___0.167039___0.64069___2.38635___0.424772___0.877072___0.354976___0.0939582___0.271549___1.33768___
+2.46472___0.114725___1.66237___0.921282___0.29637___0.579122___0.211256___0.669992___0.00492757___0.0339588___0.853197___0.42618___0.0392263___0.153166___1.22409___0.880334___0.663796___0.235995___0.608305___2.36841___0.838729___0.168505___0.257675___1.65099___0.247991___1.70736___0.546208___1.15794___0.886769___0.00772429___1.80836___1.09408___2.57415___
+
+double generate_unif_rand_firing_time(){
+	double rand_num = distribution (generator);
+	return log(1.0/rand_num);
+}
+
+#include <random>
+#include <math.h>
+default_random_engine generator;
+uniform_real_distribution <double> distribution (0.0, 1.0);
+
+
+struct concentrations{
+	bool initialized; // Whether or not this struct's data have been initialized
+	int * current_cons;
+	double * last_change_time;
+	vector<int>** cons_record; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
+							   // Needed to keep records of concentrations of some states over time
+	vector<double> ** time_record; 	// a list of (#print_states) vectors recording time points 
+									// that the concentration of each states that we keep record of is recorded
+	int num_records;
+	concentrations(){
+		this->initialized = false;
+	}
+	
+	concentrations(input_params& ip){
+		this->initialize(ip);
+	}
+	
+	void initialize(input_params& ip){
+		if (this->initialized){
+			this->reset();
+		}
+		else{
+			this->num_records = NUM_KEEP_STATES + ip.num_print_states;
+			this->current_cons = new int [NUM_STATES];
+			this->last_change_time = new double [NUM_STATES];
+			this->cons_record = new vector<int> * [NUM_KEEP_STATES + ip.num_print_states];
+			this->time_record = new vector<double> * [NUM_KEEP_STATES + ip.num_print_states];
+
+			for (int i = 0; i < NUM_KEEP_STATES; i++){
+				(this->cons_record)[i] = new vector<int>(10000, 0);
+				(this->time_record)[i] = new vector<double>(10000, 0);
+			}
+			
+			for (int i = 0; i < ip.num_print_states; i++){
+				(this->cons_record)[i + NUM_KEEP_STATES] = new vector<int>(10000, 0);
+				(this->time_record)[i + NUM_KEEP_STATES] = new vector<double>(10000, 0); 
+			}
+			
+			this->initialized = true;
+		}
+	}
+	
+	void reset(){
+		memset(this->current_cons, 0, sizeof(int) * NUM_STATES);
+		memset(this->last_change_time, 0, sizeof(double) * NUM_STATES);
+		
+		for (int i = 0; i < (this->num_records); i++){
+			memset(&((*((this->cons_record)[i]))[0]), 0, sizeof(int) * ((this->cons_record)[i])->size());
+			memset(&((*((this->time_record)[i]))[0]), 0, sizeof(int) * ((this->time_record)[i])->size());
+		}
+	}
+	
+	void transfer_record(int real_index, int record_index){
+		(this->cons_record[record_index])->push_back(this->current_cons[real_index]);
+		(this->time_record[record_index])->push_back(this->current_time[real_index]);
+	}
+	
+	~concentrations(){
+		delete [] this->current_cons;
+		delete [] this->last_change_time;
+		for (int i = 0; i < (this->num_records); i++){
+			delete (this->cons_record)[i];
+			delete (this->time_record)[i];
+		}
+		delete [] this->cons_record;
+		delete [] this->time_record;
+	}
+};

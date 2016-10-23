@@ -59,19 +59,19 @@ void test_embryo(input_params& ip){
 	
 	for (int i = 0; i < 2; i++){
 		for (int j = 0; j < 5; j++){
-			(*((em.cell_list[i])->cons)->cons_record[0])[j] = j+ 1;
-			(*((em.cell_list[i])->cons)->time_record[0])[j] = j+ 1;
+			(*(em.cell_list[i])->cons_record[0])[j] = j+ 1;
+			(*(em.cell_list[i])->time_record[0])[j] = j+ 1;
 			(((em.cell_list)[i])->cdelay)->initiate_delay(j, j+2);
 		}
 	}
 	
 	for (int i = 0; i < 2; i++){
 		for (int j = 0; j < 6; j++){
-			cout << (*((em.cell_list[i])->cons)->cons_record)[0][j] << "  ";
+			cout << (*(em.cell_list[i])->cons_record)[0][j] << "  ";
 		}
 		cout << "Just printed concentrations ..." << endl;
 		for (int j = 0; j < 6 ; j++){
-			cout << (*((em.cell_list[i])->cons)->time_record)[0][j] << "  ";
+			cout << (*(em.cell_list[i])->time_record)[0][j] << "  ";
 		}
 		cout << "Just printed time..." << endl;
 		cout << "Top of complete delay priority queue: " << (((em.cell_list)[i])->cdelay)->see_soonest() << endl;
@@ -81,11 +81,11 @@ void test_embryo(input_params& ip){
 	cout << "Just reset ....." << endl;
 	for (int i = 0; i < 3; i++){
 		for (int j = 0; j < 6; j++){
-			cout << (*((em.cell_list[i])->cons)->cons_record)[0][j] << "  ";
+			cout << (*(em.cell_list[i])->cons_record)[0][j] << "  ";
 		}
 		cout << "Just printed concentrations ..." << endl;
 		for (int j = 0; j < 6 ; j++){
-			cout << (*((em.cell_list[i])->cons)->time_record)[0][j] << "  ";
+			cout << (*(em.cell_list[i])->time_record)[0][j] << "  ";
 		}
 		cout << "Just printed time..." << endl;
 		cout << "Size of complete delay: " << (((em.cell_list)[i])->cdelay)->size() << endl;
@@ -106,7 +106,7 @@ void test_input_processing(input_params& ip, parameters& pr){
 void test_embryo_concentration(embryo& em){
 	cout << "testing initial conditions" << endl;
 	for (int i = 0; i < NUM_STATES; i++){
-		cout << (((em.cell_list[0])->cons)->current_cons)[i] << "---";
+		cout << ((em.cell_list[0])->current_cons)[i] << "---";
 	}
 	cout << endl;
 }
@@ -114,7 +114,41 @@ void test_embryo_concentration(embryo& em){
 void test_next_firing(embryo& em){
 	cout << "Next firing time: " << endl;
 	for (int i = 0; i < NUM_REACTIONS; i++){
-		cout << ((em.cell_list[0])->propen)[i] << "___";
+		cout << ((em.cell_list[0])->next_internal)[i] << "___";
 	}
 	cout << endl;
+}
+
+/*
+ * This function should only be called after em.reset()
+ */ 
+void test_cdelay_inifinity (embryo& em){
+	cout << "Should be: " << NUM_REACTIONS << "----" << ((em.cell_list[0])->cdelay)->soonest_reaction() << endl;
+	bool infinite = (((em.cell_list[0])->cdelay)->see_soonest() == INFINITY);
+	cout << "Should be true: " << infinite << endl;	
+}
+
+void test_deltaK_array(double** deltaKArray){
+	for (int i = 0; i < (NUM_REACTIONS + 1); i++){
+		if ((*deltaKArray)[i] == INFINITY){
+			cout << -1 << "___";
+		}else{
+			cout << (*deltaKArray)[i] << "___";
+		}
+	}
+	cout << endl;
+}
+
+void test_transfer_record (embryo& em){
+	int steps = ((em.cell_list[0])->cons_record[0])->size();
+	/*
+	cout << "size: " << steps << endl;
+	cout << "Capacity: " << (em.cell_list[0])->cons_record[0]->capacity() << endl;
+	cout << "Max size: " << (em.cell_list[0])->cons_record[0]->max_size() << endl;
+	*/
+	for (int i = 0; i < steps; i++){
+		cout << "concentrations: " << (*(em.cell_list[0])->cons_record[MH1])[i] << endl;
+		cout << "time: " << (*(em.cell_list[0])->time_record[MH1])[i] << endl;
+	}
+
 }

@@ -18,6 +18,7 @@ extern terminal* term; // Declared in init.cpp
 	todo:
 */
 int main(int argc, char** argv) {
+	cout << 2.5 + 2 << endl;
 	input_params ip;
 	
 	init_terminal();
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
 	parameters pr(ip.num_sets);
 	read_sim_params(ip, pr, params_data, ranges_data);
 	
-	simulate_all_params_sets(ip, pr);
+	//simulate_all_params_sets(ip, pr);
 	
 }
 

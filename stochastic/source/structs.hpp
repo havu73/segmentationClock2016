@@ -9,6 +9,7 @@
 #include <string>
 #include <vector> // Needed for concentration levels
 #include <queue> // Needed for priority queue inside complete_delay
+#include <cmath> // Need for INFINITY in priority queue
 #include "macros.hpp"
 
 //use standard name_space here
@@ -210,70 +211,6 @@ struct input_params{
 	}
 };
 
-struct concentrations{
-	bool initialized; // Whether or not this struct's data have been initialized
-	int * current_cons;
-	double * last_change_time;
-	vector<int>** cons_record; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
-							   // Needed to keep records of concentrations of some states over time
-	vector<double> ** time_record; 	// a list of (#print_states) vectors recording time points 
-									// that the concentration of each states that we keep record of is recorded
-	int num_records;
-	concentrations(){
-		this->initialized = false;
-	}
-	
-	concentrations(input_params& ip){
-		this->initialize(ip);
-	}
-	
-	void initialize(input_params& ip){
-		if (this->initialized){
-			this->reset();
-		}
-		else{
-			this->num_records = NUM_KEEP_STATES + ip.num_print_states;
-			this->current_cons = new int [NUM_STATES];
-			this->last_change_time = new double [NUM_STATES];
-			this->cons_record = new vector<int> * [NUM_KEEP_STATES + ip.num_print_states];
-			this->time_record = new vector<double> * [NUM_KEEP_STATES + ip.num_print_states];
-
-			for (int i = 0; i < NUM_KEEP_STATES; i++){
-				(this->cons_record)[i] = new vector<int>(40000, 0);
-				(this->time_record)[i] = new vector<double>(40000, 0);
-			}
-			
-			for (int i = 0; i < ip.num_print_states; i++){
-				(this->cons_record)[i + NUM_KEEP_STATES] = new vector<int>(40000, 0);
-				(this->time_record)[i + NUM_KEEP_STATES] = new vector<double>(40000, 0); 
-			}
-			
-			this->initialized = true;
-		}
-	}
-	
-	void reset(){
-		memset(this->current_cons, 0, sizeof(int) * NUM_STATES);
-		memset(this->last_change_time, 0, sizeof(double) * NUM_STATES);
-		
-		for (int i = 0; i < (this->num_records); i++){
-			memset(&((*((this->cons_record)[i]))[0]), 0, sizeof(int) * ((this->cons_record)[i])->size());
-			memset(&((*((this->time_record)[i]))[0]), 0, sizeof(int) * ((this->time_record)[i])->size());
-		}
-	}
-	
-	~concentrations(){
-		delete [] this->current_cons;
-		delete [] this->last_change_time;
-		for (int i = 0; i < (this->num_records); i++){
-			delete (this->cons_record)[i];
-			delete (this->time_record)[i];
-		}
-		delete [] this->cons_record;
-		delete [] this->time_record;
-	}
-};
-
 struct delay_reaction{
 	int reaction_index;
 	double complete_time;
@@ -317,18 +254,23 @@ struct complete_delay{
 		(this->pq)->pop();
 	}
 	
-	void clear(){
-		while(!(this->pq)->empty()){
-			(this->pq)->pop();
-		}
+	void initiate_delay(int function_index, double next_complete){
+		delay_reaction dr (function_index, next_complete);
+		(this->pq)->push(dr);
 	}
 	
 	int size(){
 		return (this->pq)->size();
 	}
 	
-	void initiate_delay(int function_index, double next_complete){
-		delay_reaction dr (function_index, next_complete);
+	void reset(){
+		while(!(this->pq)->empty()){
+			(this->pq)->pop();
+		}
+		// Need to always keep an infinity fake reaction because I have 
+		// to find soonest reaction in core_simulation(sim.cpp)  too often, so I dont want to check
+		// pq empty more often than necessary
+		delay_reaction dr (NUM_REACTIONS, INFINITY);
 		(this->pq)->push(dr);
 	}
 };
@@ -382,7 +324,15 @@ struct parameters {
 
 
 struct cell{
-	concentrations * cons;		// concentrations of different states inside the cell
+	bool initialized; // Whether or not this struct's data have been initialized
+	int * current_cons;
+	double * last_absolute_change_time;
+	vector<int>** cons_record; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
+							   // Needed to keep records of concentrations of some states over time
+	vector<double> ** time_record; 	// a list of (#print_states) vectors recording time points 
+									// that the concentration of each states that we keep record of is recorded
+	int num_records;
+	
 	double * propen;		// propensities of reactions inside the cell
 	double * next_internal;		// next internal time of reactions in the system
 	double * current_internal; // current internal time of reactions in the system
@@ -390,27 +340,73 @@ struct cell{
 	double absolute_time; // the current absolute time of the cell
 	int index; 	//the index of the cell inside the embryo
 	
+	cell(){
+		this->initialized = false;
+	}
+	
 	cell(int index, input_params& ip){
-		this->cons = new concentrations(ip);
-		this->propen = new double[NUM_REACTIONS];
-		this->next_internal = new double [NUM_REACTIONS];
-		this->current_internal = new double [NUM_REACTIONS];
-		this->cdelay = new complete_delay();
-		this->absolute_time = 0;
-		this->index = index;
+		if (this->initialized){
+			this->reset();
+		}
+		else{
+			this->num_records = NUM_KEEP_STATES + ip.num_print_states;
+			this->current_cons = new int [NUM_STATES];
+			this->last_absolute_change_time = new double [NUM_STATES];
+			this->cons_record = new vector<int> * [NUM_KEEP_STATES + ip.num_print_states];
+			this->time_record = new vector<double> * [NUM_KEEP_STATES + ip.num_print_states];
+
+			for (int i = 0; i < NUM_KEEP_STATES; i++){
+				(this->cons_record)[i] = new vector<int>;
+				(this->cons_record)[i]->reserve(5000);
+				(this->time_record)[i] = new vector<double>;
+				(this->time_record)[i]->reserve(5000);
+			}
+			
+			for (int i = 0; i < ip.num_print_states; i++){
+				(this->cons_record)[i + NUM_KEEP_STATES] = new vector<int>;
+				(this->time_record)[i + NUM_KEEP_STATES] = new vector<double>; 
+			}
+			
+			this->propen = new double[NUM_REACTIONS];
+			this->next_internal = new double [NUM_REACTIONS];
+			this->current_internal = new double [NUM_REACTIONS];
+			this->cdelay = new complete_delay();
+			this->absolute_time = 0;
+			this->index = index;
+			this->initialized = true;
+		}
 	}
 	
 	void reset(){
-		(this->cons)->reset();
+		memset(this->current_cons, 0, sizeof(int) * NUM_STATES);
+		memset(this->last_absolute_change_time, 0, sizeof(double) * NUM_STATES);
+		
+		for (int i = 0; i < (this->num_records); i++){
+			memset(&((*((this->cons_record)[i]))[0]), 0, sizeof(int) * ((this->cons_record)[i])->size());
+			memset(&((*((this->time_record)[i]))[0]), 0, sizeof(int) * ((this->time_record)[i])->size());
+		}
+		
 		memset(this->propen, 0, sizeof(double) * NUM_REACTIONS);
 		memset(this->next_internal, 0, sizeof(double) * NUM_REACTIONS);
 		memset(this->current_internal, 0, sizeof(double) * NUM_REACTIONS);
 		this->absolute_time = 0;
-		(this->cdelay)->clear();
+		(this->cdelay)->reset();
+	}
+	
+	void transfer_record(int real_index, int record_index){
+		(this->cons_record[record_index])->push_back(this->current_cons[real_index]);
+		(this->time_record[record_index])->push_back(this->last_absolute_change_time[real_index]);
 	}
 	
 	~cell(){
-		delete this->cons;
+		delete [] this->current_cons;
+		delete [] this->last_absolute_change_time;
+		for (int i = 0; i < (this->num_records); i++){
+			delete (this->cons_record)[i];
+			delete (this->time_record)[i];
+		}
+		delete [] this->cons_record;
+		delete [] this->time_record;
 		delete [] this->propen;
 		delete [] this->next_internal;
 		delete [] this->current_internal;
@@ -421,6 +417,7 @@ struct cell{
 struct embryo{
 	cell ** cell_list;
 	int ** neighbors;
+	int neighbor_per_cell; // number of neighbors that each cell has
 	int num_cells;
 	
 	embryo(input_params& ip){
@@ -447,10 +444,12 @@ struct embryo{
 	
 	void construct_neighbors(){
 		if (this->num_cells == 2){
+			this->neighbor_per_cell = 1;
 			(this->neighbors)[0][0] = 1;
 			(this->neighbors)[1][0] = 0;
 		}
 		else if(this->num_cells == 16){
+			this->neighbor_per_cell = MAX_NEIGHBORS;
 			int zero [] = {1,4,3,7,12,13};
 			int one [] = {0,4,5,2,12,13};
 			int two [] = {1,3,5,6,13,14};
@@ -543,9 +542,7 @@ struct sim_data{
 		(this->dependency_size)[RPSH7] = 3;
 		
 		(this->dependency)[RPSD][0] = RPDD;
-		(this->dependency)[RPSD][1] = RAG1N; // We actually update RAG1N propensities for neighbors, not the cell itself
-		(this->dependency)[RPSD][2] = RAG7N; // Same above
-		(this->dependency_size)[RPSD] = 3;
+		(this->dependency_size)[RPSD] = 1;
 		
 		(this->dependency)[RPDH1][0] = RPDH1;
 		(this->dependency)[RPDH1][1] = RDAH11;
@@ -558,9 +555,7 @@ struct sim_data{
 		(this->dependency_size)[RPDH7] = 3;
 		
 		(this->dependency)[RPDD][0] = RPDD;
-		(this->dependency)[RPDD][1] = RAG1N; // We actually update RAG1N propensities for neighbors, not the cell itself
-		(this->dependency)[RPDD][2] = RAG7N; // Same above
-		(this->dependency_size)[RPDD] = 3;
+		(this->dependency_size)[RPDD] = 1;
 		
 		(this->dependency)[RPDH11][0] = RPDH11;
 		(this->dependency)[RPDH11][1] = RDDH11;

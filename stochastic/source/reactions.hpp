@@ -2,6 +2,8 @@
 #define REACTIONS_HPP
 #include "structs.hpp"
 
+void recalculate_propensities(int, embryo&, int, sim_data&, rates&);
+
 void reactionRPSH1 (embryo&, int, sim_data&, rates&, bool);
 void reactionRPSH7 (embryo&, int, sim_data&, rates&, bool);
 void reactionRPSD (embryo&, int, sim_data&, rates&, bool);

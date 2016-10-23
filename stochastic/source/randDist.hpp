@@ -40,7 +40,7 @@ inline int pois_dist (double mean) {
 
 // Pk distribution, which is just a logarithmic uniform distribution
 inline double pk_dist () {
-	return log(1 / unif_dist());
+	return log(1.0 / unif_dist());
 }
 
 #endif

@@ -46,5 +46,7 @@ void propensityRMSD(embryo&, int, rates&);
 
 void propensityRAGDPH11(embryo&, int, rates&);
 void propensityRDGDPH11(embryo&, int, rates&);
+
+void propensityRAG1NandRAG7N(embryo&, int, rates&);
 #endif
 

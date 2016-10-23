@@ -2,7 +2,8 @@
 #define MACROS_HPP
 
 // NEIGHBOR NETWORK PARAMETERS
-#define MAX_NEIGHBORS	6	// each cell has maximum 6 neighbors	
+#define MAX_NEIGHBORS	6	// each cell has maximum 6 neighbors
+	
 // STATES
 #define MH1		0 	//mRNA Her1
 #define MH7		1 	//mRNA Her7
@@ -14,10 +15,10 @@
 #define	PH17	7 	//dimer Her1- Her7
 #define	PH77	8 	//dimer Her7- Her7
 #define	G1		9 	//gene her1
-#define	G1PN	10 	//gene her1 bound by protein nicd
+#define	G1N		10 	//gene her1 bound by protein nicd
 #define	G1PH11	11 	//gene her1 bound by dimer Her1-Her1
 #define	G7		12 	//gene her7
-#define	G7PN	13 	//gene her7 bound by protein nicd
+#define	G7N		13 	//gene her7 bound by protein nicd
 #define	G7PH11	14 	//gene her7 bound by dimer Her1-Her1
 #define	GD		15 	//gene delta
 #define	GDPH11	16 	//gene delta bound by dimer Her1-Her1

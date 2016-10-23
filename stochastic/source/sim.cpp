@@ -1,5 +1,4 @@
-#include <random>
-#include <math.h>
+#include <cmath>
 #include "sim.hpp"
 #include "debug.hpp"
 #include "init.hpp"
@@ -7,8 +6,7 @@
 #include "randDist.hpp"
 
 extern terminal* term; // Declared in init.cpp
-default_random_engine generator;
-uniform_real_distribution <double> distribution (0.0, 1.0);
+
 
 void simulate_all_params_sets(input_params& ip, parameters& pr){
 	embryo em(ip);
@@ -72,15 +70,64 @@ void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	// calculate propensity for each reaction
 	calculate_initial_propensity(sd, rs, em);
 	calculate_initial_next_internal(em);
-	test_next_firing(em);
+	
+	// time keeping variables
+	bool done = false;
+	int record_per_done = ip.check_done_granularity / ip.record_granularity; // How many time to checks record per time checking done
+	
+	// Delta K array: how much time will pass from the current time for each reaction to occur, plus the firing time for the soonest-complete delayed reaction 
+	double* deltaKArray = new double[NUM_REACTIONS + 1];
+	
+	// some parameters used repeatedly during simulation
+	int next_fire; // index of reaction that will fire next
+	double delta; // time from current time a reaction will occur
+	int complete_delay_index;
+	
+	// enter simulation loop
+	while (!done){
+		for (int i = 0; i < record_per_done; i++){
+			for (int j = 0; j < ip.record_granularity; j++){
+				for (int k = 0; k < ip.num_cells; k++){
+					// 1.find Delta
+					next_fire = update_deltaK_array(&deltaKArray, em.cell_list[k]);
+					delta = deltaKArray[next_fire];
+					
+					// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
+					update_current_internal(em.cell_list[k], delta);
+					
+					// 3. update absolute time for cell
+					(em.cell_list[k])->absolute_time = (em.cell_list[k])->absolute_time + delta;
+					
+					// 4. take actions based on what reaction is chosen to fire: update concentrations and also update propensity for involved reactions
+					if (next_fire != NUM_REACTIONS){ // if either non-delay reaction or delay reaction initiate 
+						// Call reaction: update concentrations and also propensity
+						sd.reac_funs[next_fire](em, k, sd, rs, false); // complete = false because for delay reactions, this is just initiation
+						// find the next firing time of the reaction that just fired
+						find_next_firing(em.cell_list[k], next_fire);
+					}
+					else{ // if a delayed reaction is complete: update concentrations, propen, get rid of the reaction in the priority queue
+						complete_delay_index = (em.cell_list[k]->cdelay)->soonest_reaction();
+						sd.reac_funs[complete_delay_index](em, k, sd, rs, true);
+					}
+				}
+			}
+			// transfer data from current time and concentration to record time and concentration
+			transfer_to_record(em, ip);
+		}
+		// check whether done or not
+		done = check_done(em, ip);
+		
+	}
+	
+	delete [] deltaKArray;
 }
 
 
 void update_initial_concentrations (embryo& em){
 	for (int i = 0; i < em.num_cells; i++){
-		(((em.cell_list[i])->cons)->current_cons)[G1] = 2;
-		(((em.cell_list[i])->cons)->current_cons)[G7] = 2;
-		(((em.cell_list[i])->cons)->current_cons)[GD] = 2;
+		((em.cell_list[i])->current_cons)[G1] = 2;
+		((em.cell_list[i])->current_cons)[G7] = 2;
+		((em.cell_list[i])->current_cons)[GD] = 2;
 	}
 }
 
@@ -94,16 +141,63 @@ void calculate_initial_propensity(sim_data& sd, rates& rs, embryo& em){
 }
 
 void calculate_initial_next_internal(embryo& em){
-	double rand_num;
 	for (int i = 0; i < em.num_cells; i++){
 		for (int j = 0; j < NUM_REACTIONS; j++){
-			rand_num = distribution(generator);
-			((em.cell_list[i])->propen)[j] = log(1.0/rand_num);
+			((em.cell_list[i])->next_internal)[j] = pk_dist();
 		}
 	}
 }
 
-double generate_unif_rand_firing_time(){
-	double rand_num = distribution (generator);
-	return log(1.0/rand_num);
+int update_deltaK_array(double** deltaKArray, cell* current_cell){
+	double current_min = INFINITY;
+	double min_index = NUM_REACTIONS;
+	for (int i = 0; i < NUM_REACTIONS; i++){
+		if ((current_cell->propen)[i] != 0){
+			// deltak = (Pk - Tk) / ak (next internal - current_internal) / propensity;
+			(*deltaKArray)[i] = ((current_cell->next_internal)[i] - (current_cell->current_internal)[i]) / (current_cell->propen)[i];
+			if ((*deltaKArray)[i] < current_min){
+				current_min = (*deltaKArray)[i];
+				min_index = i;
+			}
+		}
+		else{
+			(*deltaKArray)[i] = INFINITY;
+		}
+	}
+	(*deltaKArray)[NUM_REACTIONS] = ((current_cell)->cdelay)->see_soonest() - (current_cell->absolute_time);
+	if ((*deltaKArray)[NUM_REACTIONS] < current_min){
+		min_index = NUM_REACTIONS;
+	}
+	return min_index;
+}
+
+void update_current_internal(cell* current_cell, double delta){
+	// For each reaction: Tk = Tk + Ak * Delta
+	for (int i = 0; i < NUM_REACTIONS; i++){
+		(current_cell->current_internal)[i] = (current_cell->current_internal)[i] + (current_cell->propen)[i] * delta;
+	}
+}
+
+void find_next_firing(cell* current_cell, int reaction_index){
+	(current_cell->next_internal)[reaction_index] = (current_cell->next_internal)[reaction_index] + pk_dist(); 
+}
+
+void transfer_to_record(embryo& em, input_params& ip){
+	for (int i = 0; i < ip.num_cells; i++){
+		(em.cell_list[i])->transfer_record(MH1, KEEPMH1);
+		(em.cell_list[i])->transfer_record(MH7, KEEPMH7);
+		(em.cell_list[i])->transfer_record(MD, KEEPMD);
+		for (int j = 0; j < ip.num_print_states; j++){
+			(em.cell_list[i])->transfer_record(ip.print_states[j], NUM_KEEP_STATES + j);
+		}
+	}
+}
+
+bool check_done(embryo& em, input_params& ip){
+	for (int i = 0; i < ip.num_cells; i++){
+		if (em.cell_list[i]->absolute_time >= ip.time_total){
+			return true;
+		}
+	}
+	return false;
 }

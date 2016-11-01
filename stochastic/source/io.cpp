@@ -13,7 +13,11 @@
 using namespace std;
 
 extern terminal* term; // Declared in init.cpp
-char* mutant_dir_name []= {"wildtype"};
+char* mutant_dir_name [] = {"wildtype"};
+char* state_file_name [] = {"mHer1", "mHer7", "mDelta", "pHer1", 
+	"pHer7", "pDelta", "dimerH1H1", "dimerH1H7", "dimerH7H7", "geneH1", "geneH1N", "geneH1PH11", "geneH7",
+	"geneH7N", "geneH7PH11", "geneDelta", "geneDeltaPH11"};
+	
 /* copy string from value to field.
  * Used in accept_input_params (init.cpp) to store users' input files names into corresponding field in ip
  * Ex: store_filename(&(ip.passed_file_name), value)
@@ -278,4 +282,76 @@ void create_mutant_directory(int set_index, int mutant_index, input_params& ip){
 		exit(EXIT_FILE_WRITE_ERROR);
 	}
 	delete [] dir_name;
+}
+
+void print_concentrations(input_params& ip, int set_index, int mutant_index, embryo& em){
+	// allocate memory for directory and file names
+	int num_files = NUM_KEEP_STATES + ip.num_print_states;
+	char** filename = new char* [num_files];
+	for (int i = 0; i < num_files; i++){
+		filename[i] = new char [100];
+	}
+	char* dir_name = new char [50];
+	
+	// create directory name
+	if (ip.has_out_dir){
+		sprintf(dir_name, "%s/set_%d/%s", ip.out_dir, set_index+1, mutant_dir_name[mutant_index]);
+	}
+	else{
+		sprintf(dir_name, "set_%d/%s", set_index+1, mutant_dir_name[mutant_index]);
+	}
+	
+	// create file names
+	create_concentrations_file_name(num_files, ip, dir_name , filename);
+	
+	// print out onto files
+	for (int i = 0; i < num_files; i ++){
+		print_one_state_concentrations(em, i, filename);
+	}
+	
+	// delete directory and file names
+	delete [] dir_name;
+	for (int i = 0; i < num_files; i ++){
+		delete [] filename[i];
+	}
+	delete [] filename;
+}
+
+void create_concentrations_file_name(int num_files, input_params& ip, char* dir_name, char** filename){
+	sprintf(filename[KEEPMH1], "%s/%s.txt", dir_name, state_file_name[MH1]);
+	sprintf(filename[KEEPMH7], "%s/%s.txt", dir_name, state_file_name[MH7]);
+	int state_index;
+	for (int i = NUM_KEEP_STATES; i < num_files; i ++){
+		state_index = ip.print_states[i - NUM_KEEP_STATES];
+		sprintf(filename[i], "%s/%s.txt", dir_name, state_file_name[state_index]);
+	}
+}
+
+void print_one_state_concentrations(embryo& em, int state_index, char** filename){
+	ofstream file_cons;
+	open_file(&file_cons, filename[state_index], true);
+	int num_steps; 
+	vector<int> * cons;
+	vector<double> * time;
+	for (int i = 0; i < em.num_cells; i++){
+		num_steps = (em.cell_list[i]->cons_record)[state_index]->size();
+		cons = (em.cell_list[i]->cons_record)[state_index];
+		time = (em.cell_list[i]->time_record)[state_index];
+		for (int j = 0; j < num_steps; j++){
+			file_cons << (*time)[j] << "," << (*cons)[j] << " ";
+		}
+		file_cons << "\n";
+	}
+}
+
+void write_pipe(double* score, input_params& ip){
+	if (write(ip.pipe_out, score, sizeof(double)) == -1) {
+		term->failed_pipe_write();
+		exit(EXIT_PIPE_WRITE_ERROR);
+	}
+	// Close the pipe
+	if (close(ip.pipe_out) == -1) {
+		term->failed_pipe_write();
+		exit(EXIT_PIPE_WRITE_ERROR);
+	}
 }

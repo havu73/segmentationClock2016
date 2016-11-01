@@ -1,3 +1,4 @@
+#include <time.h>
 #include "main.hpp" // Function declarations
 #include "structs.hpp"
 #include "init.hpp"
@@ -18,7 +19,10 @@ extern terminal* term; // Declared in init.cpp
 	todo:
 */
 int main(int argc, char** argv) {
-	cout << 2.5 + 2 << endl;
+	clock_t t;
+	t = clock();
+	test_process_binned_data();
+	/*
 	input_params ip;
 	
 	init_terminal();
@@ -42,7 +46,9 @@ int main(int argc, char** argv) {
 	read_sim_params(ip, pr, params_data, ranges_data);
 	
 	//simulate_all_params_sets(ip, pr);
-	
+	*/
+	t = clock() - t; 
+	cout << "Execution time: " << ((float) t) / CLOCKS_PER_SEC << endl;
 }
 
 /* usage prints the usage information and, optionally, an error message and then exits

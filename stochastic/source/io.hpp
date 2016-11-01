@@ -12,4 +12,8 @@ void parse_ranges_file (pair <double, double>[], char*);
 bool not_EOL (char);
 void create_set_directory (int, input_params&);
 void create_mutant_directory(int, int, input_params&);
+void print_concentrations(input_params&, int, int, embryo&);
+void create_concentrations_file_name(int, input_params&, char*, char**);
+void print_one_state_concentrations(embryo&, int, char**);
+void write_pipe(double*, input_params&);
 #endif

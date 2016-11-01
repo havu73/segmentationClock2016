@@ -4,6 +4,7 @@
 #include "init.hpp"
 #include "io.hpp"
 #include "randDist.hpp"
+#include "tests.hpp"
 
 extern terminal* term; // Declared in init.cpp
 
@@ -45,10 +46,14 @@ int simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set_in
 		// revert_rates
 	}
 	// print score to pipe if necessary
+	if (ip.piping){
+		write_pipe((double *) &score, ip);
+	}
 	return score;
 }
 
 int simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, int set_index, int mutant_index){
+	int mutant_score = 0;
 	// reset embryo : for each cell:
 	// cons: current_cons to all 0; last_change_time to all 0; time_record to all 0; cons_record to all 0
 	// propen[NUM_REACTIONS] all to 0
@@ -59,9 +64,18 @@ int simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, int s
 	em.reset();
 	// core simulation
 	core_simulation(ip, sd, rs, em);
+	cout << em.cell_list[1]->absolute_time << endl;
+	cout << ((em.cell_list[1]->cons_record)[KEEPMH1])->size() << endl;
 	// test conditions
+	features wtf(ip.num_cells, ip.num_bin);
+	if (mutant_index == WT){
+		mutant_score = test_wildtype(ip, em, wtf);
+	}
 	// print data if necessary
-	return 0;
+	if (ip.print_cons){
+		print_concentrations(ip, set_index, mutant_index, em);
+	}
+	return mutant_score;
 }
 
 void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
@@ -186,7 +200,6 @@ void transfer_to_record(embryo& em, input_params& ip){
 	for (int i = 0; i < ip.num_cells; i++){
 		(em.cell_list[i])->transfer_record(MH1, KEEPMH1);
 		(em.cell_list[i])->transfer_record(MH7, KEEPMH7);
-		(em.cell_list[i])->transfer_record(MD, KEEPMD);
 		for (int j = 0; j < ip.num_print_states; j++){
 			(em.cell_list[i])->transfer_record(ip.print_states[j], NUM_KEEP_STATES + j);
 		}
@@ -196,6 +209,8 @@ void transfer_to_record(embryo& em, input_params& ip){
 bool check_done(embryo& em, input_params& ip){
 	for (int i = 0; i < ip.num_cells; i++){
 		if (em.cell_list[i]->absolute_time >= ip.time_total){
+			cout << "First done cell: " << i+ 1 << endl;
+			cout << "Absolute time: " << em.cell_list[i]->absolute_time;
 			return true;
 		}
 	}

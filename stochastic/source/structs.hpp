@@ -137,6 +137,9 @@ struct input_params{
 	// number of cells in the embryo
 	int num_cells;
 	
+	// number of bin to do noise analysis
+	int num_bin;
+	
 	// Parameters related to the speed and data collection of the simulation
 	int check_done_granularity; // every 120 reactions fired, we will check each cell and see whether or not they have reached a time point
 									  // above the time we need to simulate
@@ -190,11 +193,14 @@ struct input_params{
 		this->null_stream = new ofstream("/dev/null");
 		
 		// number of cells in the embryo
-		this->num_cells = 16;
+		this->num_cells = 4;
+		
+		// number of bins to do data analysis
+		this->num_bin = DEFAULT_NUM_BIN;
 		
 		// parameters about data transfer and time control of the simulation
-		this->check_done_granularity = 120;
-		this->record_granularity = 30;
+		this->check_done_granularity = 200;
+		this->record_granularity = 100;
 	}
 	
 	~input_params(){
@@ -357,9 +363,9 @@ struct cell{
 
 			for (int i = 0; i < NUM_KEEP_STATES; i++){
 				(this->cons_record)[i] = new vector<int>;
-				(this->cons_record)[i]->reserve(5000);
+				(this->cons_record)[i]->reserve(60000);
 				(this->time_record)[i] = new vector<double>;
-				(this->time_record)[i]->reserve(5000);
+				(this->time_record)[i]->reserve(60000);
 			}
 			
 			for (int i = 0; i < ip.num_print_states; i++){
@@ -382,8 +388,8 @@ struct cell{
 		memset(this->last_absolute_change_time, 0, sizeof(double) * NUM_STATES);
 		
 		for (int i = 0; i < (this->num_records); i++){
-			memset(&((*((this->cons_record)[i]))[0]), 0, sizeof(int) * ((this->cons_record)[i])->size());
-			memset(&((*((this->time_record)[i]))[0]), 0, sizeof(int) * ((this->time_record)[i])->size());
+			(this->cons_record)[i]->clear();
+			(this->time_record)[i]->clear();
 		}
 		
 		memset(this->propen, 0, sizeof(double) * NUM_REACTIONS);
@@ -433,10 +439,15 @@ struct embryo{
 				(this->neighbors)[i] = new int [1];
 			}
 		}
-		if (this->num_cells == 16){
+		else if (this->num_cells == 4){
+			for (int i = 0; i < num_cells; i++){
+				(this->neighbors)[i] = new int [FOUR_NEIGHBORS];
+			}
+		}
+		else if (this->num_cells == 16){
 			for (int i = 0; i < this->num_cells; i++){
-				(this->neighbors)[i] = new int [MAX_NEIGHBORS];
-				memset((this->neighbors)[i], 0, sizeof(int) * MAX_NEIGHBORS);
+				(this->neighbors)[i] = new int [SIXTEEN_NEIGHBORS];
+				memset((this->neighbors)[i], 0, sizeof(int) * SIXTEEN_NEIGHBORS);
 			}
 		}
 		this->construct_neighbors();
@@ -444,12 +455,23 @@ struct embryo{
 	
 	void construct_neighbors(){
 		if (this->num_cells == 2){
-			this->neighbor_per_cell = 1;
+			this->neighbor_per_cell = TWO_NEIGHBORS;
 			(this->neighbors)[0][0] = 1;
 			(this->neighbors)[1][0] = 0;
 		}
+		else if (this->num_cells == 4){
+			this->neighbor_per_cell = FOUR_NEIGHBORS;
+			int zero [] = {1,2,3};
+			int one [] = {0,2,3};
+			int two [] = {0,1,3};
+			int three [] = {0,1,2};
+			memcpy((this->neighbors)[0], zero, sizeof(int) * FOUR_NEIGHBORS);
+			memcpy((this->neighbors)[1], one, sizeof(int) *	FOUR_NEIGHBORS);
+			memcpy((this->neighbors)[2], two, sizeof(int) * FOUR_NEIGHBORS);
+			memcpy((this->neighbors)[3], three, sizeof(int) * FOUR_NEIGHBORS);
+		}
 		else if(this->num_cells == 16){
-			this->neighbor_per_cell = MAX_NEIGHBORS;
+			this->neighbor_per_cell = SIXTEEN_NEIGHBORS;
 			int zero [] = {1,4,3,7,12,13};
 			int one [] = {0,4,5,2,12,13};
 			int two [] = {1,3,5,6,13,14};
@@ -466,22 +488,22 @@ struct embryo{
 			int thirteen [] = {9,10,14,2,1,12};
 			int fourteen [] = {10,11,15,3,2,13};
 			int fifteen [] = {11,8,12,3,2,14};
-			memcpy((this->neighbors)[0], zero, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[1], one, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[2], two, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[3], three, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[4], four, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[5], five, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[6], six, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[7], seven, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[8], eight, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[9], nine, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[10], ten, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[11], eleven, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[12], twelve, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[13], thirteen, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[14], fourteen, sizeof(int) * MAX_NEIGHBORS);
-			memcpy((this->neighbors)[15], fifteen, sizeof(int) * MAX_NEIGHBORS);
+			memcpy((this->neighbors)[0], zero, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[1], one, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[2], two, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[3], three, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[4], four, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[5], five, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[6], six, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[7], seven, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[8], eight, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[9], nine, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[10], ten, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[11], eleven, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[12], twelve, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[13], thirteen, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[14], fourteen, sizeof(int) * SIXTEEN_NEIGHBORS);
+			memcpy((this->neighbors)[15], fifteen, sizeof(int) * SIXTEEN_NEIGHBORS);
 		}
 	}
 	
@@ -752,6 +774,150 @@ struct sim_data{
 	}
 };
 
+struct peak_trough{
+	double* smooth_cons;
+	vector<int>* peaks;
+	vector<int>* troughs;
+	int capacity;
+	int num_cons;
+	
+	peak_trough(int smooth_size){
+		this->capacity = smooth_size;
+		this->num_cons = 0;
+		this->smooth_cons = new double [smooth_size];
+		this->peaks = new vector<int>;
+		this->troughs = new vector<int>;
+		(this->peaks)->reserve(200);
+		(this->troughs)->reserve(200);
+	}
+	
+	void reset(){
+		this->clear(); 
+	}
+	
+	void clear(){
+		this->num_cons = 0;
+		memset(this->smooth_cons, 0, sizeof(double) * this->capacity);
+		(this->peaks)->clear();
+		(this->troughs)->clear();
+	}
+	
+	~peak_trough(){
+		delete [] this->smooth_cons;
+		delete this->peaks;
+		delete this->troughs;
+	}
+};
+
+struct features{
+	double** avg_amplitude;
+	double** mid_ptt;
+	double** last_ptt;
+	double* intrinsic;
+	double* extrinsic;
+	double* avg_cons;
+	int num_cells;
+	int num_bin;
+	
+	features(int num_cells, int num_bin){
+		this->num_cells = num_cells; 
+		this->avg_amplitude = new double* [NUM_KEEP_STATES];
+		this->mid_ptt = new double* [NUM_KEEP_STATES];
+		this->last_ptt = new double* [NUM_KEEP_STATES];
+		for (int i = 0; i < NUM_KEEP_STATES; i ++){
+			this->avg_amplitude[i] = new double [num_cells];
+			this->mid_ptt[i] = new double [num_cells];
+			this->last_ptt[i] = new double [num_cells];
+		}
+		
+		this->intrinsic = new double[num_bin];
+		this->extrinsic = new double[num_bin];
+		this->avg_cons = new double [num_bin];
+		this->num_bin = num_bin;
+	}
+	
+	void reset(){
+		for (int i = 0; i < NUM_KEEP_STATES; i ++){
+			memset(this->avg_amplitude[i], 0, sizeof(double) * this->num_cells);
+			memset(this->mid_ptt[i], 0, sizeof(double) * this->num_cells);
+			memset(this->last_ptt[i], 0, sizeof(double) * this->num_cells);
+		}
+		memset(this->intrinsic, 0, sizeof(double) * this->num_bin);
+		memset(this->extrinsic, 0, sizeof(double) * this->num_bin);
+		memset(this->avg_cons, 0, sizeof(double) * this->num_bin);
+	}
+	
+	~features(){
+		for (int i = 0; i < NUM_KEEP_STATES; i ++){
+			delete [] (this->avg_amplitude)[i];
+			delete [] (this->mid_ptt)[i];
+			delete [] (this->last_ptt)[i];
+		}
+		delete [] this->avg_amplitude;
+		delete [] this->mid_ptt;
+		delete [] this->last_ptt;
+		
+		delete [] this->intrinsic;
+		delete [] this->extrinsic;
+		delete [] this->avg_cons;
+	}
+};
+
+struct binned_data{
+	vector<int> ** her1_data;
+	vector<int> ** her7_data;
+	int * total_her1;
+	int * total_her7;
+	double * avg_her1;
+	double * avg_her7;
+	int num_bin;
+	
+	binned_data(){
+		this->her1_data = new vector<int>* [DEFAULT_NUM_BIN];
+		this->her7_data = new vector<int>* [DEFAULT_NUM_BIN];
+		this->num_bin = DEFAULT_NUM_BIN;
+		for (int i = 0; i < DEFAULT_NUM_BIN; i++){
+			(this->her1_data)[i] = new vector<int>;
+			(this->her1_data)[i]->reserve(30000);
+			(this->her7_data)[i] = new vector<int>;
+			(this->her7_data)[i]->reserve(30000);
+		}
+		this->total_her1 = new int[DEFAULT_NUM_BIN];
+		this->total_her7 = new int[DEFAULT_NUM_BIN];
+		this->avg_her1 = new double[DEFAULT_NUM_BIN];
+		this->avg_her7 = new double[DEFAULT_NUM_BIN];
+	}
+	
+	binned_data(int num_bin){
+		this->her1_data = new vector<int>* [num_bin];
+		this->her7_data = new vector<int>* [num_bin];
+		this->num_bin = num_bin;
+		for (int i = 0; i < num_bin; i++){
+			(this->her1_data)[i] = new vector<int>;
+			(this->her1_data)[i]->reserve(30000);
+			(this->her7_data)[i] = new vector<int>;
+			(this->her7_data)[i]->reserve(30000);
+
+		}
+		this->total_her1 = new int[num_bin];
+		this->total_her7 = new int[num_bin];
+		this->avg_her1 = new double[num_bin];
+		this->avg_her7 = new double[num_bin];
+		memset(this->total_her1, 0, sizeof(int) * num_bin);
+		memset(this->total_her7, 0, sizeof(int) * num_bin);
+		memset(this->avg_her1, 0, sizeof(double) * num_bin);
+		memset(this->avg_her7, 0, sizeof(double) * num_bin);
+	}
+	
+	~binned_data(){
+		for (int i = 0; i < this->num_bin; i ++){
+			delete (this->her1_data)[i];
+			delete (this->her7_data)[i];
+		}
+		delete [] this->her1_data;
+		delete [] this->her7_data;
+	}
+};
 
 struct input_data {
 	char* filename; // The path and name of the file

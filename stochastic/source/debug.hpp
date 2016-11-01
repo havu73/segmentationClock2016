@@ -10,5 +10,8 @@ void test_embryo_concentration(embryo&);
 void test_next_firing(embryo&);
 void test_deltaK_array(double**);
 void test_transfer_record (embryo&);
+void test_peaks_troughs();
+void test_process_smooth_data();
+void test_process_binned_data();
 #endif
 

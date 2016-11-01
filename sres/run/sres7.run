@@ -1,0 +1,13 @@
+#PBS -N matsumura7
+#PBS -l nodes=1:ppn=10
+#PBS -l mem=2GB
+#PBS -l file=100MB
+#PBS -M hvu@colgate.edu
+#PBS -q biomath
+#PBS -j oe
+#PBS -o output.pbs-job7
+#PBS -l walltime=360:00:00
+cd $PBS_O_WORKDIR
+
+time mpirun -np 5 ~/Matsumura/sres/sres -p 20 -g 7000 -r ~/Matsumura/sres/ranges/ranges_7.txt -f ~/Matsumura/simulation/simulation -t ~/Matsumura/sres/output/perf7.txt -G 0 -a -S 0.005 -g 20 --quiet > matsumura7_scn_ocl.txt
+

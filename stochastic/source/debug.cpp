@@ -1,5 +1,6 @@
 #include "debug.hpp"
 #include "macros.hpp"
+#include "tests.hpp"
 void test_dependency_graph(sim_data& sd){
 	for (int i = 0; i < NUM_REACTIONS; i++){
 		cout << "Reaction " << i << "  ";
@@ -49,9 +50,18 @@ Size of complete delay: 0
 
 void test_embryo(input_params& ip){
 	embryo em(ip);
-	
+	int neighbor_per_cell = 0;
+	if (ip.num_cells == 16){
+		neighbor_per_cell = SIXTEEN_NEIGHBORS;
+	}
+	else if (ip.num_cells == 4){
+		neighbor_per_cell = FOUR_NEIGHBORS;
+	}
+	else if (ip.num_cells == 2){
+		neighbor_per_cell = TWO_NEIGHBORS;
+	}
 	for (int i = 0; i < ip.num_cells; i++){
-		for (int j = 0; j < MAX_NEIGHBORS; j++){
+		for (int j = 0; j < neighbor_per_cell; j++){
 			cout << (em.neighbors)[i][j] << "  ";
 		}
 		cout << endl;
@@ -151,4 +161,220 @@ void test_transfer_record (embryo& em){
 		cout << "time: " << (*(em.cell_list[0])->time_record[MH1])[i] << endl;
 	}
 
+}
+
+void test_peaks_troughs(){
+	peak_trough pt (5);
+	for (int i = 0; i < 5; i ++){
+		(pt.smooth_cons)[i] = i;
+		(pt.peaks)->push_back(i);
+		(pt.troughs)->push_back(i);
+	}
+	cout << "Size of peaks/troughs: " << (pt.peaks)->size() << endl;
+	pt.clear();
+	cout << "Size of peaks/ troughs: " << (pt.peaks)->size() << endl;
+	for (int i = 0; i < 5; i ++){
+		(pt.smooth_cons)[i] = i;
+		(*(pt.peaks))[i] = (i + 5);
+		(*(pt.troughs))[i] = (i + 5);
+	}
+	cout << "Size of peaks/troughs (5) : " << (pt.peaks)->size() << endl; 
+	cout << "Take away: reset a vector using clear(), not by memset all elements to 0" << endl;
+	cout << "After reset, use push_back()  to add elemnts to vector, not by (pt.peaks)[0] = 0." << endl;
+	cout << "If you do that, the size of the vector is still 0" << endl;
+	for (int i = 0; i < 5; i ++){
+		cout << (*(pt.peaks))[i] << "   " ;
+	}
+	cout << endl;
+	
+}
+
+/*
+ * In order to use this function:
+ * change NUM_KEEP_STATES to 1
+ * change WINDOW_SIZE to 2
+ * change WING_CHECK_SIZE to 2
+ */
+void test_process_smooth_data(){
+	input_params ip;
+	ip.num_cells = 1;
+	embryo em (ip);
+	cell* cc = em.cell_list[0];
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	features fts (1, DEFAULT_NUM_BIN);
+	process_smooth_data(em, fts);
+	for (int i = 0; i < ip.num_cells; i ++){
+		cout << "********* Cell number: " << i + 1 << endl;
+		for (int j = 0; j < NUM_KEEP_STATES; j ++){
+			cout << "Amplitude: " << fts.avg_amplitude[j][i] << endl;
+			cout << "Mid_ptt: " << fts.mid_ptt[j][i] << endl;
+			cout << "Last_ptt: " << fts.last_ptt[j][i] << endl;
+		}
+	}
+}
+
+/*
+ * In order to use this function:
+ */
+void test_process_binned_data(){
+	input_params ip;
+	ip.num_cells = 1;
+	embryo em (ip);
+	cell* cc = em.cell_list[0];
+	// her1
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(9);
+	(cc->cons_record[0])->push_back(8);
+	(cc->cons_record[0])->push_back(7);
+	(cc->cons_record[0])->push_back(6);
+	
+	// her7
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(9);
+	(cc->cons_record[1])->push_back(8);
+	(cc->cons_record[1])->push_back(7);
+	(cc->cons_record[1])->push_back(6);
+	features fts (1, DEFAULT_NUM_BIN);
+	binned_data bd(DEFAULT_NUM_BIN);
+	process_binned_data(bd, em, fts);
+	for (int i = 0; i < DEFAULT_NUM_BIN; i ++){
+		cout << "Intrinsic noise: " << fts.intrinsic[i] << endl;
+		cout << "Extrinsic noise: " << fts.extrinsic[i] << endl;
+		cout << "Avg-cons: " << fts.avg_cons[i] << endl;
+		cout << endl;
+	}
 }

@@ -2,8 +2,10 @@
 #define MACROS_HPP
 
 // NEIGHBOR NETWORK PARAMETERS
-#define MAX_NEIGHBORS	6	// each cell has maximum 6 neighbors
-	
+#define SIXTEEN_NEIGHBORS	6	// each cell has maximum 6 neighbors
+#define FOUR_NEIGHBORS 		3
+#define TWO_NEIGHBORS		1
+
 // STATES
 #define MH1		0 	//mRNA Her1
 #define MH7		1 	//mRNA Her7
@@ -128,9 +130,8 @@
 //WHAT STATES TO KEEP RECORD OF OVER TIME
 #define KEEPMH1		0		// Index of MH1
 #define KEEPMH7		1		// Index of MH7
-#define KEEPMD		2		// Index of MD
 
-#define NUM_KEEP_STATES		3
+#define NUM_KEEP_STATES		2
 
 // MUTANTS
 #define WT					0
@@ -142,6 +143,13 @@
 
 #define TOTAL_SC			0
 
+// PARAMETERS FOR SMOOTHING DATA AND CHECKING PEAKS AND TROUGHS
+#define WINDOW_SIZE			50 // each smoothed data point is equal to the average of data point and 50 points to the left and 50 points ot the right
+#define WING_CHECK_SIZE 	50 // each potential peak/trough needs to satisfy that its concentrations is higher / lower than the 50 data points to its left and right
+#define LOW_NUM_PT			3  // in order to be considered to have sustained oscillation, need to have at least LOW_NUM_PT peaks and at lease LOW_NUM_PT troughs
+
+// PARAMETERS FOR BINNING DATA
+#define	DEFAULT_NUM_BIN 	5
 
 // EXIT STATUS
 #define EXIT_SUCCESS			0

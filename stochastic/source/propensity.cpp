@@ -114,13 +114,14 @@ void propensityRDG1PH11(embryo& em, int cell_index, rates& rs){
 void propensityRAG1N(embryo& em, int cell_index, rates& rs){
 	int neighbor_pd = 0;
 	int neighbor_index;
+	double num_neighbors = (double) em.neighbor_per_cell;
 	for (int i = 0 ; i < em.neighbor_per_cell; i++){
 		neighbor_index = em.neighbors[cell_index][i];
 		neighbor_pd += (em.cell_list[neighbor_index]->current_cons)[PD];
 	}
 	(em.cell_list[cell_index]->propen)[RAG1N] = rs.data[KAG1PN]
 												* (em.cell_list[cell_index]->current_cons)[G1]
-												* (1.0/6.0) * neighbor_pd;
+												* (1.0/num_neighbors) * neighbor_pd;
 }
 void propensityRDG1N(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RDG1N] = rs.data[KDG1PN]
@@ -149,13 +150,14 @@ void propensityRDG7PH11(embryo& em, int cell_index, rates& rs){
 void propensityRAG7N(embryo& em, int cell_index, rates& rs){
 	int neighbor_pd = 0;
 	int neighbor_index;
+	double num_neighbors = (double) em.neighbor_per_cell;
 	for (int i = 0 ; i < em.neighbor_per_cell; i++){
 		neighbor_index = em.neighbors[cell_index][i];
 		neighbor_pd += (em.cell_list[neighbor_index]->current_cons)[PD];
 	}
 	(em.cell_list[cell_index]->propen)[RAG7N] = rs.data[KAG7PN]
 												* (em.cell_list[cell_index]->current_cons)[G7]
-												* (1.0/6.0) * neighbor_pd;
+												* (1.0/num_neighbors) * neighbor_pd;
 }
 void propensityRDG7N(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RDG7N] = rs.data[KDG7PN]
@@ -180,14 +182,15 @@ void propensityRDGDPH11(embryo& em, int cell_index, rates& rs){
 void propensityRAG1NandRAG7N(embryo& em, int cell_index, rates& rs){
 	int neighbor_pd = 0;
 	int neighbor_index;
+	double num_neighbors = (double) em.neighbor_per_cell;
 	for (int i = 0 ; i < em.neighbor_per_cell; i++){
 		neighbor_index = em.neighbors[cell_index][i];
 		neighbor_pd += (em.cell_list[neighbor_index]->current_cons)[PD];
 	}
 	(em.cell_list[cell_index]->propen)[RAG1N] = rs.data[KAG1PN]
 												* (em.cell_list[cell_index]->current_cons)[G1]
-												* (1.0/6.0) * neighbor_pd;
+												* (1.0/num_neighbors) * neighbor_pd;
 	(em.cell_list[cell_index]->propen)[RAG7N] = rs.data[KAG7PN]
 												* (em.cell_list[cell_index]->current_cons)[G7]
-												* (1.0/6.0) * neighbor_pd;
+												* (1.0/num_neighbors) * neighbor_pd;
 }

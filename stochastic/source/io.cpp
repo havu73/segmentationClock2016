@@ -330,15 +330,16 @@ void create_concentrations_file_name(int num_files, input_params& ip, char* dir_
 void print_one_state_concentrations(embryo& em, int state_index, char** filename){
 	ofstream file_cons;
 	open_file(&file_cons, filename[state_index], true);
-	int num_steps; 
 	vector<int> * cons;
-	vector<double> * time;
+	int num_steps = (em.time_record)->size();
+	for (int i = 0; i < num_steps; i++){
+		file_cons << (em.time_record)->at(i) << ","; 
+	}
+	file_cons << "\n";
 	for (int i = 0; i < em.num_cells; i++){
-		num_steps = (em.cell_list[i]->cons_record)[state_index]->size();
 		cons = (em.cell_list[i]->cons_record)[state_index];
-		time = (em.cell_list[i]->time_record)[state_index];
 		for (int j = 0; j < num_steps; j++){
-			file_cons << (*time)[j] << "," << (*cons)[j] << " ";
+			file_cons << cons->at(j) << ",";
 		}
 		file_cons << "\n";
 	}

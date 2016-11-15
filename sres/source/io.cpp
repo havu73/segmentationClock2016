@@ -240,6 +240,7 @@ double simulate_set (double parameters[]) {
 	waitpid(pid, &status, WUNTRACED);
 	if (WIFEXITED(status) == 0) {
 		term->failed_child();
+		print_parameters_for_test(parameters);
 		exit(EXIT_CHILD_ERROR);
 	}
 	
@@ -254,6 +255,7 @@ double simulate_set (double parameters[]) {
 	read_pipe(parent_read, &score);
 	v << term->blue << "Done: " << term->reset << "(raw score " << score << ")" << endl;
 	
+	cout << "Score received from model: " << score << endl;
 	/////PRINT OUT GOOD SETS
 	print_good_set(parameters, score);
 	
@@ -291,6 +293,13 @@ double simulate_set (double parameters[]) {
 	
 	// libSRES requires scores from 0 to 1 with 0 being a perfect score so convert the simulation's score format into libSRES's
 	return score;
+}
+
+void print_parameters_for_test(double parameters []){
+	for (int i = 0; i < ip.num_dims; i++){
+		cout << parameters[i] << "," ;
+	}
+	cout << endl;
 }
 
 void delete_file(int fd){

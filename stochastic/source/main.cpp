@@ -4,7 +4,7 @@
 #include "init.hpp"
 #include "sim.hpp"
 #include "debug.hpp"
-
+#include "io.hpp"
 using namespace std;
 
 extern terminal* term; // Declared in init.cpp
@@ -19,10 +19,10 @@ extern terminal* term; // Declared in init.cpp
 	todo:
 */
 int main(int argc, char** argv) {
-	clock_t t;
-	t = clock();
-	test_process_binned_data();
-	/*
+	//clock_t t;
+	//t = clock();
+	//test_slices();
+	
 	input_params ip;
 	
 	init_terminal();
@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
 										// Dont worry about cases when users enter the same number of mutants but they are wrongly entered, because that gets checked in accept_input_params
 		calculate_max_cond_score(ip);
 	}
-	
 	// declare input_data objects based on users' input about input file names. The buffer of these objects is empty now, and will be filled in right after this declaration section
 	input_data params_data(ip.params_file);
 	input_data ranges_data(ip.ranges_file);
@@ -45,10 +44,10 @@ int main(int argc, char** argv) {
 	parameters pr(ip.num_sets);
 	read_sim_params(ip, pr, params_data, ranges_data);
 	
-	//simulate_all_params_sets(ip, pr);
-	*/
-	t = clock() - t; 
-	cout << "Execution time: " << ((float) t) / CLOCKS_PER_SEC << endl;
+	simulate_all_params_sets(ip, pr);
+	
+	//t = clock() - t; 
+	//cout << "Execution time: " << ((float) t) / CLOCKS_PER_SEC << endl;
 }
 
 /* usage prints the usage information and, optionally, an error message and then exits

@@ -70,7 +70,6 @@ void test_embryo(input_params& ip){
 	for (int i = 0; i < 2; i++){
 		for (int j = 0; j < 5; j++){
 			(*(em.cell_list[i])->cons_record[0])[j] = j+ 1;
-			(*(em.cell_list[i])->time_record[0])[j] = j+ 1;
 			(((em.cell_list)[i])->cdelay)->initiate_delay(j, j+2);
 		}
 	}
@@ -80,10 +79,6 @@ void test_embryo(input_params& ip){
 			cout << (*(em.cell_list[i])->cons_record)[0][j] << "  ";
 		}
 		cout << "Just printed concentrations ..." << endl;
-		for (int j = 0; j < 6 ; j++){
-			cout << (*(em.cell_list[i])->time_record)[0][j] << "  ";
-		}
-		cout << "Just printed time..." << endl;
 		cout << "Top of complete delay priority queue: " << (((em.cell_list)[i])->cdelay)->see_soonest() << endl;
 		cout << "Size of complete delay: " << (((em.cell_list)[i])->cdelay)->size() << endl;
 	}
@@ -94,10 +89,6 @@ void test_embryo(input_params& ip){
 			cout << (*(em.cell_list[i])->cons_record)[0][j] << "  ";
 		}
 		cout << "Just printed concentrations ..." << endl;
-		for (int j = 0; j < 6 ; j++){
-			cout << (*(em.cell_list[i])->time_record)[0][j] << "  ";
-		}
-		cout << "Just printed time..." << endl;
 		cout << "Size of complete delay: " << (((em.cell_list)[i])->cdelay)->size() << endl;
 	}
 }
@@ -158,7 +149,6 @@ void test_transfer_record (embryo& em){
 	*/
 	for (int i = 0; i < steps; i++){
 		cout << "concentrations: " << (*(em.cell_list[0])->cons_record[MH1])[i] << endl;
-		cout << "time: " << (*(em.cell_list[0])->time_record[MH1])[i] << endl;
 	}
 
 }
@@ -259,12 +249,13 @@ void test_process_smooth_data(){
 			cout << "Last_ptt: " << fts.last_ptt[j][i] << endl;
 		}
 	}
+	cout <<  "Done with the work" << endl;
 }
 
 /*
  * In order to use this function:
  */
-void test_process_binned_data(){
+void test_process_noise_data(){
 	input_params ip;
 	ip.num_cells = 1;
 	embryo em (ip);
@@ -369,12 +360,23 @@ void test_process_binned_data(){
 	(cc->cons_record[1])->push_back(7);
 	(cc->cons_record[1])->push_back(6);
 	features fts (1, DEFAULT_NUM_BIN);
-	binned_data bd(DEFAULT_NUM_BIN);
-	process_binned_data(bd, em, fts);
+	process_noise_data(em, fts);
 	for (int i = 0; i < DEFAULT_NUM_BIN; i ++){
 		cout << "Intrinsic noise: " << fts.intrinsic[i] << endl;
 		cout << "Extrinsic noise: " << fts.extrinsic[i] << endl;
 		cout << "Avg-cons: " << fts.avg_cons[i] << endl;
 		cout << endl;
 	}
+}
+
+void test_slices(){
+	slices sl(4);
+	for (int i = 0; i < NUM_SLICES; i++){
+		cout << "In noise: " << sl.in_noise[i] << endl;
+		cout << sl.her1[i][0] << "___" << sl.her7[i][0] << endl;
+	}
+}
+
+void test_process_slices(embryo& em, features& fts){
+	process_noise_data(em, fts);
 }

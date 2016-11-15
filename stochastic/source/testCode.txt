@@ -352,3 +352,94 @@ struct concentrations{
 		delete [] this->time_record;
 	}
 };
+
+
+
+
+void process_binned_data(binned_data& bd, embryo& em, features& fts){
+	double * bounds = new double [bd.num_bin];
+	find_bin_bounds(bounds, em, bd.num_bin);
+	put_data_into_bins(bounds, em, bd);
+	calculate_noise_features(bd, fts);
+	delete [] bounds;
+}
+
+void find_bin_bounds(double* bounds, embryo& em, int num_bin){
+	int max = -1 ;
+	int min = INFINITY;
+	int total_cons = 0;
+	vector<int>* her1;
+	vector<int>* her7;
+	for (int i = 0; i < em.num_cells; i++){
+		her1 = ((em.cell_list[i])->cons_record)[KEEPMH1];
+		her7 = ((em.cell_list[i])->cons_record)[KEEPMH7];
+		for (int j = 0; j < her1->size(); j++){
+			total_cons = her1->at(j) + her7->at(j);
+			if (total_cons < min){
+				min = total_cons;
+			}
+			if (total_cons > max){
+				max = total_cons;
+			}
+		}
+	}
+	
+	double bin_size = ((double) max - (double) min)	/ (double)num_bin;
+	for (int i = 0; i < num_bin; i++){
+		bounds[i] = (double) min + bin_size * (i + 1);
+	}
+}
+
+void put_data_into_bins(double* bounds, embryo& em, binned_data& bd){
+	vector<int>* her1;
+	vector<int>* her7;
+	int current_bound_index = 0; 
+	double total_cons;
+	for (int i = 0; i < em.num_cells; i++){
+		her1 = ((em.cell_list[i])->cons_record)[KEEPMH1];
+		her7 = ((em.cell_list[i])->cons_record)[KEEPMH7];
+		for (int j = 0; j < her1->size(); j++){
+			total_cons = her1->at(j) + her7->at(j);
+			while (total_cons > bounds[current_bound_index]){
+				current_bound_index += 1;
+			}
+			(bd.her1_data[current_bound_index])->push_back(her1->at(j));
+			(bd.her7_data[current_bound_index])->push_back(her7->at(j));
+			bd.total_her1[current_bound_index] += her1->at(j);
+			bd.total_her7[current_bound_index] += her7->at(j);
+			current_bound_index = 0;
+		}
+	}
+}
+
+void calculate_noise_features(binned_data& bd, features& fts){
+	// calculate average concentrations of different bins
+	for (int i = 0; i < bd.num_bin; i++){
+		bd.avg_her1[i] = (double)bd.total_her1[i] / (double)(bd.her1_data[i])->size();
+		bd.avg_her7[i] = (double)bd.total_her7[i] / (double)(bd.her7_data[i])->size();
+	}
+	double avg1;
+	double avg7;
+	vector<int> * her1;
+	vector<int> * her7;
+	double intrinsic_total = 0;
+	double extrinsic_total = 0;
+	for (int i = 0; i < bd.num_bin; i++){
+		avg1 = bd.avg_her1[i];
+		avg7 = bd.avg_her7[i];
+		her1 = bd.her1_data[i];
+		her7 = bd.her7_data[i];
+		for (int j = 0; j < her1->size(); j++){
+			intrinsic_total += pow((her1->at(j) / avg1) - (her7->at(j) /avg7), 2.0);
+			extrinsic_total += (double) her1->at(j) * (double) her7->at(j);
+		}
+		// intrinsic noise of bin
+		fts.intrinsic[i] = 0.5 * intrinsic_total / ((double)her1->size());
+		// extrinsic noise of bin
+		fts.extrinsic[i] = (extrinsic_total / (her1->size())) - avg1 * avg7;
+		fts.extrinsic[i] /= (avg1 * avg7);
+		// average mRNAs levels of bin
+		fts.avg_cons[i] = avg1 + avg7;
+	}
+}
+

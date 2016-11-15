@@ -1,4 +1,4 @@
-#PBS -N matsumura7
+#PBS -N wildtype7
 #PBS -l nodes=1:ppn=10
 #PBS -l mem=2GB
 #PBS -l file=100MB
@@ -6,8 +6,8 @@
 #PBS -q biomath
 #PBS -j oe
 #PBS -o output.pbs-job7
-#PBS -l walltime=360:00:00
+#PBS -l walltime=480:00:00
 cd $PBS_O_WORKDIR
 
-time mpirun -np 5 ~/Matsumura/sres/sres -p 20 -g 7000 -r ~/Matsumura/sres/ranges/ranges_7.txt -f ~/Matsumura/simulation/simulation -t ~/Matsumura/sres/output/perf7.txt -G 0 -a -S 0.005 -g 20 --quiet > matsumura7_scn_ocl.txt
+time mpirun -np 5 ~/segmentationClock2016/sres/sres -p 20 -r ~/segmentationClock/sres/ranges.txt -f ~/segmentationClock2016/stochastic/stochastic -t ~/segmentationClock2016/sres/output/wt7.txt -G 0 > wildtype7.txt
 

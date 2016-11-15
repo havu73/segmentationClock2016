@@ -193,7 +193,7 @@ struct input_params {
 	
 	input_params () {
 		this->ranges_file = NULL;
-		this->sim_file = copy_str("../simulation/simulation");
+		this->sim_file = copy_str("../stochastic/stochastic");
 		this->num_dims = 37;
 		this->pop_parents = 3;
 		this->pop_total = 30;
@@ -202,7 +202,6 @@ struct input_params {
 		this->good_set_threshold = 0.8;
 		this->print_good_sets = false;
 		this->good_sets_file = new char[50];
-		//this->good_sets_stream = NULL;
 		this->sim_args = NULL;
 		this->num_sim_args = 0;
 		this->printing_precision = 6;

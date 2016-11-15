@@ -1,25 +1,178 @@
 #include <math.h>
 #include "tests.hpp"
-
+/*
+ * Max_score : 5
+ */
 int test_wildtype(input_params& ip, embryo& em, features& wtf){
+	int score = 0;
 	// check mRNA boundaries
+	bool mRNA_in_bound = true; //check_mRNA_boundaries(em);
+	if (! mRNA_in_bound){
+		return 0;
+	}
 	// process peaks and troughs
 	process_smooth_data(em, wtf);
 	// sustained oscillation
+	score += check_WT_sustained(wtf);
 	// H1, H7 spatial amplitude
-	// binned data used for all types of noises calculation
-	binned_data bd(ip.num_bin);
+	score += check_WT_amplitude(wtf);
 	// calculate noises
-	process_binned_data(bd, em, wtf);
+	process_noise_data(em, wtf);
+	// average mRNA concentrations tests
+	score += check_WT_avg_cons(wtf);
 	// intrisic noise test
+	score += check_WT_intrinsic (wtf);
 	// extrinsic noise test
+	score += check_WT_extrinsic (wtf);
+	return score;
+}
+
+bool check_mRNA_boundaries (embryo& em){
+	int num_steps = em.time_record->size();
+	for (int i = 0; i < em.num_cells; i++){
+		vector<int> * cch1 = (em.cell_list[i])->cons_record[KEEPMH1];
+		vector<int> * cch7 = (em.cell_list[i])->cons_record[KEEPMH7];
+		if (cch1->size() != num_steps || cch7->size() != num_steps){
+			cout << "Encounter a problem with size of cons and time record: num_steps: " << num_steps << "____ cons: " << cch1->size() << "____" << cch7->size() << endl;
+			return false;
+		}
+		for (int j = 0; j < num_steps; j++){
+			if ((cch1->at(j) + cch7->at(j)) > UPPER_BOUND_HER){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+int check_WT_sustained (features& wtf){
+	for (int i = 0; i < wtf.num_cells; i ++){
+		if (wtf.mid_ptt[KEEPMH1][i] < LOWER_BOUND_PTT){
+			return 0;
+		}
+		if (wtf.last_ptt[KEEPMH7][i] < LOWER_BOUND_PTT){
+			return 0;
+		}
+		if ((wtf.mid_ptt[KEEPMH1][i] / wtf.last_ptt[KEEPMH1][i]) > UPPER_BOUND_MTL){
+			return 0;
+		}
+	}	
+	return 1;
+}
+
+
+int check_WT_amplitude (features& wtf){
+	double h1_amplitude = 0;
+	double h7_amplitude = 0;
+	int num_h1 = 0;
+	int num_h7 = 0;
+	for (int i = 0; i < wtf.num_cells; i ++){
+		if (wtf.avg_amplitude[KEEPMH1][i] > 0){
+			h1_amplitude += wtf.avg_amplitude[KEEPMH1][i];
+			num_h1 += 1;
+		}
+		if (wtf.avg_amplitude[KEEPMH7][i] > 0){
+			h7_amplitude += wtf.avg_amplitude[KEEPMH7][i];
+			num_h7 += 1;
+		}
+	}
+	h1_amplitude = h1_amplitude / (double) num_h1;
+	h7_amplitude = h7_amplitude / (double) num_h7;
 	
-	return 0;
+	if (h1_amplitude < WT_H1_AMP_LOW){
+		return 0;
+	}
+	if (h1_amplitude > WT_H1_AMP_HIGH){
+		return 0;
+	}
+	if (h7_amplitude < WT_H7_AMP_LOW){
+		return 0;
+	}
+	if (h7_amplitude > WT_H7_AMP_LOW){
+		return 0;
+	}
+	return 1;
+}
+
+int check_WT_avg_cons(features& wtf){
+	// Bin 1
+	if (wtf.avg_cons[0] < LOW_WT_HER_BIN1){
+		return 0;
+	}
+	if (wtf.avg_cons[0] > UP_WT_HER_BIN1){
+		return 0;
+	}
+	// Bin 2
+	if (wtf.avg_cons[1] < LOW_WT_HER_BIN2){
+		return 0;
+	}
+	if (wtf.avg_cons[1] > UP_WT_HER_BIN2){
+		return 0;
+	}
+	// Bin 3
+	if (wtf.avg_cons[2] < LOW_WT_HER_BIN3){
+		return 0;
+	}
+	if (wtf.avg_cons[2] > UP_WT_HER_BIN3){
+		return 0;
+	}
+	return 1;
+}
+
+int check_WT_intrinsic(features& wtf){
+	// Bin 1
+	if (wtf.intrinsic[0] < LOW_WT_IN_NOISE_BIN1){
+		return 0;
+	}
+	if (wtf.intrinsic[0] > UP_WT_IN_NOISE_BIN1){
+		return 0;
+	}
+	// Bin 2
+	if (wtf.intrinsic[1] < LOW_WT_IN_NOISE_BIN2){
+		return 0;
+	}
+	if (wtf.intrinsic[1] > UP_WT_IN_NOISE_BIN2){
+		return 0;
+	}
+	// Bin 3
+	if (wtf.extrinsic[2] < LOW_WT_IN_NOISE_BIN3){
+		return 0;
+	}
+	if (wtf.extrinsic[2] > UP_WT_IN_NOISE_BIN3){
+		return 0;
+	}
+	return 1;
+}
+
+int check_WT_extrinsic (features& wtf){
+	// Bin 1
+	if (wtf.extrinsic[0] < LOW_WT_EX_NOISE_BIN1){
+		return 0;
+	}
+	if (wtf.extrinsic[0] > UP_WT_EX_NOISE_BIN1){
+		return 0;
+	}
+	// Bin 2
+	if (wtf.extrinsic[1] < LOW_WT_EX_NOISE_BIN2){
+		return 0;
+	}
+	if (wtf.extrinsic[1] > UP_WT_EX_NOISE_BIN2){
+		return 0;
+	}
+	// Bin 3
+	if (wtf.extrinsic[2] < LOW_WT_EX_NOISE_BIN3){
+		return 0;
+	}
+	if (wtf.extrinsic[2] > UP_WT_EX_NOISE_BIN3){
+		return 0;
+	}
+	return 1;
 }
 
 void process_smooth_data(embryo& em, features& fts){
 	// find the good capcaity for peaks_troughs
-	int capacity = find_peaks_troughs_capacity(em);
+	int capacity = ((em.cell_list[0])->cons_record[0])->size();
+	//int capacity = em.time_record->size() - WINDOW_SIZE * 2;
 	peak_trough pt (capacity);
 	for (int i = 0; i < em.num_cells; i++){
 		for (int j = 0; j < NUM_KEEP_STATES; j ++){
@@ -30,23 +183,12 @@ void process_smooth_data(embryo& em, features& fts){
 	}
 }
 
-int find_peaks_troughs_capacity(embryo& em){
-	int capacity = 0; 
-	for (int i = 0; i < em.num_cells; i++){
-		for (int j = 0; j < NUM_KEEP_STATES; j++){
-			if (capacity < (em.cell_list[i]->cons_record)[j]->size()){
-				capacity = (em.cell_list[i]->cons_record)[j]->size() - WINDOW_SIZE * 2;
-			}
-		}
-	}
-	return capacity;
-}
 
 void smooth_data(embryo& em, peak_trough& pt, int cell_index, int con_index){
 	vector<int> * current_vector = (em.cell_list[cell_index]->cons_record)[con_index];
 	pt.num_cons = current_vector->size() - WINDOW_SIZE * 2;
 	int sum = 0; 
-	int avg_divisor = WINDOW_SIZE * 2;
+	int avg_divisor = WINDOW_SIZE * 2 + 1;
 	for (int i = 0; i < avg_divisor; i ++){
 		sum += current_vector->at(i);
 	}
@@ -54,13 +196,14 @@ void smooth_data(embryo& em, peak_trough& pt, int cell_index, int con_index){
 	int remove_index = 0;
 	int add_index = WINDOW_SIZE * 2 + 1;
 	
-	for (int i = 1; i < pt.num_cons; i ++){
+	for (int i = 1; i < (pt.num_cons); i ++){
 		sum -= current_vector->at(remove_index);
 		sum += current_vector->at(add_index);
 		pt.smooth_cons[i] = double(sum) / double(avg_divisor);
 		remove_index += 1;
 		add_index += 1;
 	}
+	
 }
 
 void find_peaks_and_troughs(peak_trough& pt, features& fts, int cell_index, int con_index){
@@ -103,13 +246,14 @@ void find_peaks_and_troughs(peak_trough& pt, features& fts, int cell_index, int 
 		fts.mid_ptt[con_index][cell_index] = 0;
 		fts.last_ptt[con_index][cell_index] = 0;
 	}
-	// calculate the amplitude of the concentrations of this cell
-	avg_peak = avg_peak / (pt.peaks->size());
-	avg_trough = avg_trough / (pt.troughs->size());
-	fts.avg_amplitude[con_index][cell_index] = avg_peak - avg_trough;
-
-	//calculate peak_to_trough
-	calculate_p2t(pt, fts, con_index, cell_index);
+	else {
+		// calculate the amplitude of the concentrations of this cell
+		avg_peak = avg_peak / (pt.peaks->size());
+		avg_trough = avg_trough / (pt.troughs->size());
+		fts.avg_amplitude[con_index][cell_index] = avg_peak - avg_trough;
+		//calculate peak_to_trough
+		calculate_p2t(pt, fts, con_index, cell_index);
+	}
 }
 
 bool check_peak(peak_trough& pt, int current_index){
@@ -138,7 +282,7 @@ bool check_peak(peak_trough& pt, int current_index){
 		}
 	}
 	// right wing check; if any of the right wing points is greater than the current point: return false immediately
-	for (int i = current_index + 1; (i >= upper_index && i < pt.num_cons); i++){
+	for (int i = current_index + 1; (i <= upper_index && i < pt.num_cons); i++){
 		if (pt.smooth_cons[i] > current_cons){
 			return false;
 		}
@@ -246,89 +390,148 @@ void calculate_p2t(peak_trough& pt, features& fts, int con_index, int cell_index
 	}
 }
 
-void process_binned_data(binned_data& bd, embryo& em, features& fts){
+void process_noise_data(embryo& em, features& fts){
+	slices sl (em.num_cells);
+	process_slices (em, sl);
+	calculate_slice_noise(em, sl);
+	binned_data bd (fts.num_bin);
 	double * bounds = new double [bd.num_bin];
-	find_bin_bounds(bounds, em, bd.num_bin);
-	put_data_into_bins(bounds, em, bd);
-	calculate_noise_features(bd, fts);
-	delete [] bounds;
+	calculate_bounds(sl, bd, bounds);
+	put_data_to_bin(sl, bd, bounds); 
+	calculate_bins (bd, fts);
 }
 
-void find_bin_bounds(double* bounds, embryo& em, int num_bin){
-	int max = -1 ;
-	int min = INFINITY;
-	int total_cons = 0;
-	vector<int>* her1;
-	vector<int>* her7;
-	for (int i = 0; i < em.num_cells; i++){
-		her1 = ((em.cell_list[i])->cons_record)[KEEPMH1];
-		her7 = ((em.cell_list[i])->cons_record)[KEEPMH7];
-		for (int j = 0; j < her1->size(); j++){
-			total_cons = her1->at(j) + her7->at(j);
-			if (total_cons < min){
-				min = total_cons;
+void process_slices (embryo& em, slices& sl){
+	double low_time;
+	double high_time;
+	int current_index = 0;
+	double current_time = em.time_record->at(current_index);
+	double* total_her1 = new double [em.num_cells];
+	double* total_her7 = new double [em.num_cells];
+	int total_cells;
+	for (int i = 0; i < NUM_SLICES; i++){
+		low_time = MINUTE_PER_SLICE * (i + 1) - SLICE_EXTENSION;
+		high_time = MINUTE_PER_SLICE * (i + 1) + SLICE_EXTENSION;
+		memset(total_her1, 0, sizeof(double) * em.num_cells);
+		memset(total_her7, 0, sizeof(double) * em.num_cells);
+		total_cells = 0;
+		while (current_time < high_time){
+			if (current_time > low_time){
+				for (int j = 0; j < em.num_cells; j++){
+					total_her1[j] += ((em.cell_list[j])->cons_record[KEEPMH1])->at(current_index);
+					total_her7[j] += ((em.cell_list[j])->cons_record[KEEPMH7])->at(current_index);
+				}
+				total_cells += 1;
 			}
-			if (total_cons > max){
-				max = total_cons;
+			current_index += 1;
+			current_time = em.time_record->at(current_index);
+		}
+		
+		if (total_cells > 0){
+			for (int j = 0; j < em.num_cells; j++){
+				sl.her1[i][j] = total_her1[j] / total_cells;
+				sl.her7[i][j] = total_her7[j] / total_cells;
 			}
 		}
 	}
 	
-	double bin_size = ((double) max - (double) min)	/ (double)num_bin;
-	for (int i = 0; i < num_bin; i++){
-		bounds[i] = (double) min + bin_size * (i + 1);
-	}
+
+	delete [] total_her1;
+	delete [] total_her7;
 }
 
-void put_data_into_bins(double* bounds, embryo& em, binned_data& bd){
-	vector<int>* her1;
-	vector<int>* her7;
-	int current_bound_index = 0; 
-	double total_cons;
-	for (int i = 0; i < em.num_cells; i++){
-		her1 = ((em.cell_list[i])->cons_record)[KEEPMH1];
-		her7 = ((em.cell_list[i])->cons_record)[KEEPMH7];
-		for (int j = 0; j < her1->size(); j++){
-			total_cons = her1->at(j) + her7->at(j);
-			while (total_cons > bounds[current_bound_index]){
-				current_bound_index += 1;
+void calculate_slice_noise(embryo& em, slices& sl){
+	double min_her = INFINITY;
+	double max_her = -1;
+	// calculate the average concentrations in each slice
+	for (int i = 0; i < NUM_SLICES; i++) {
+		if (sl.her1[i][0] > -1){
+			sl.avg_h1[i] = 0;
+			sl.avg_h7[i] = 0;
+			for (int j = 0; j < em.num_cells; j ++){
+				sl.avg_h1[i] += sl.her1[i][j];
+				sl.avg_h7[i] += sl.her7[i][j];
 			}
-			(bd.her1_data[current_bound_index])->push_back(her1->at(j));
-			(bd.her7_data[current_bound_index])->push_back(her7->at(j));
-			bd.total_her1[current_bound_index] += her1->at(j);
-			bd.total_her7[current_bound_index] += her7->at(j);
-			current_bound_index = 0;
+			sl.avg_h1[i] = sl.avg_h1[i] / em.num_cells;
+			sl.avg_h7[i] = sl.avg_h7[i] / em.num_cells;
+			sl.avg_her[i] = sl.avg_h1[i] + sl.avg_h7[i];
+		}
+	}
+	
+	
+	// calculate intrinsic and extrinsic noise for each slice
+	for (int i = 0; i < NUM_SLICES; i ++){
+		double intrinsic = 0;
+		double extrinsic = 0;
+		if (sl.avg_h1[i] > 0 && sl.avg_h7[i] > 0){
+			double ah1 = sl.avg_h1[i];
+			double ah7 = sl.avg_h7[i];
+			if (sl.avg_her[i] < min_her){
+				min_her = sl.avg_her[i];
+			}
+			if (sl.avg_her[i] > max_her){
+				max_her = sl.avg_her[i];
+			}
+			for (int j = 0; j < em.num_cells; j ++){
+				intrinsic += pow(((sl.her1[i][j] / ah1) - (sl.her7[i][j] / ah7)), 2.0);
+				extrinsic += sl.her1[i][j] * sl.her7[i][j]; 
+			}
+			
+			// intrinsic noise of slice
+			intrinsic = intrinsic / em.num_cells;
+			intrinsic = intrinsic * 0.5;
+			sl.in_noise[i] = intrinsic;
+			// extrinsic noise of slice
+			extrinsic = extrinsic / em.num_cells;
+			extrinsic -= ah1 * ah7;
+			extrinsic /= (ah1 * ah7);
+			sl.ex_noise[i] = extrinsic;
+		}
+	}
+	
+	sl.min_her = min_her;
+	sl.max_her = max_her;
+}
+
+void calculate_bounds(slices& sl, binned_data& bd, double* bounds){
+	double interval = (sl.max_her - sl.min_her) / bd.num_bin;
+	for (int i = 0; i < bd.num_bin; i++){
+		bounds[i] = sl.min_her + interval * (i + 1);
+	}
+}
+
+void put_data_to_bin(slices& sl, binned_data& bd, double* bounds){
+	for (int i = 0; i < NUM_SLICES; i++){
+		//cout << sl.avg_her[i] << endl;
+		int j = 0; 
+		while (sl.avg_her[i] >= bounds[j] && j < bd.num_bin){
+			j++;
+		}
+		if (sl.avg_h1[i] > 0 && sl.avg_h7[i] > 0 && j < bd.num_bin){
+			(bd.her[j])->push_back(sl.avg_her[i]);
+			(bd.in_noise[j])->push_back(sl.in_noise[i]);
+			(bd.ex_noise[j])->push_back(sl.ex_noise[i]);
 		}
 	}
 }
 
-void calculate_noise_features(binned_data& bd, features& fts){
-	// calculate average concentrations of different bins
+void calculate_bins(binned_data& bd, features& fts){
+	double her = 0;
+	double in = 0;
+	double ex = 0;
 	for (int i = 0; i < bd.num_bin; i++){
-		bd.avg_her1[i] = (double)bd.total_her1[i] / (double)(bd.her1_data[i])->size();
-		bd.avg_her7[i] = (double)bd.total_her7[i] / (double)(bd.her7_data[i])->size();
-	}
-	double avg1;
-	double avg7;
-	vector<int> * her1;
-	vector<int> * her7;
-	double intrinsic_total = 0;
-	double extrinsic_total = 0;
-	for (int i = 0; i < bd.num_bin; i++){
-		avg1 = bd.avg_her1[i];
-		avg7 = bd.avg_her7[i];
-		her1 = bd.her1_data[i];
-		her7 = bd.her7_data[i];
-		for (int j = 0; j < her1->size(); j++){
-			intrinsic_total += pow((her1->at(j) / avg1) - (her7->at(j) /avg7), 2.0);
-			extrinsic_total += (double) her1->at(j) * (double) her7->at(j);
+		her = 0;
+		in = 0; 
+		ex = 0;
+		for (int j = 0; j < (bd.her[i])->size(); j++){
+			her += (bd.her[i])->at(j);
+			in += (bd.in_noise[i])->at(j);
+			ex += (bd.ex_noise[i])->at(j);
 		}
-		// intrinsic noise of bin
-		fts.intrinsic[i] = 0.5 * intrinsic_total / ((double)her1->size());
-		// extrinsic noise of bin
-		fts.extrinsic[i] = (extrinsic_total / (her1->size())) - avg1 * avg7;
-		fts.extrinsic[i] /= (avg1 * avg7);
-		// average mRNAs levels of bin
-		fts.avg_cons[i] = avg1 + avg7;
+		if ((bd.her[i])->size() > 0){
+			fts.avg_cons[i] = her / (bd.her[i])->size();
+			fts.intrinsic[i] = in / (bd.her[i])->size();
+			fts.extrinsic[i] = ex / (bd.her[i])->size();
+		}
 	}
 }

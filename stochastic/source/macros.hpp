@@ -144,13 +144,49 @@
 #define TOTAL_SC			0
 
 // PARAMETERS FOR SMOOTHING DATA AND CHECKING PEAKS AND TROUGHS
-#define WINDOW_SIZE			50 // each smoothed data point is equal to the average of data point and 50 points to the left and 50 points ot the right
-#define WING_CHECK_SIZE 	50 // each potential peak/trough needs to satisfy that its concentrations is higher / lower than the 50 data points to its left and right
+#define WINDOW_SIZE			70 // each smoothed data point is equal to the average of data point and 50 points to the left and 50 points ot the right
+#define WING_CHECK_SIZE 	70 // each potential peak/trough needs to satisfy that its concentrations is higher / lower than the 50 data points to its left and right
 #define LOW_NUM_PT			3  // in order to be considered to have sustained oscillation, need to have at least LOW_NUM_PT peaks and at lease LOW_NUM_PT troughs
 
 // PARAMETERS FOR BINNING DATA
-#define	DEFAULT_NUM_BIN 	5
+#define	DEFAULT_NUM_BIN 	3
 
+// PARAMETER FOR SLICING
+#define NUM_SLICES			100
+#define MINUTE_PER_SLICE	6
+#define SLICE_EXTENSION		0.4
+
+// CONDITIONS CHECKING PARAMETERS
+#define UPPER_BOUND_HER		250
+#define LOWER_BOUND_PTT		1.5
+#define UPPER_BOUND_MTL		1.5
+#define WT_H1_AMP_LOW		35
+#define WT_H1_AMP_HIGH		45
+#define WT_H7_AMP_LOW		43
+#define WT_H7_AMP_HIGH		51
+// Average Her mRNA levels in bins
+#define	LOW_WT_HER_BIN1			28.19997886
+#define UP_WT_HER_BIN1			34.46664083
+#define	LOW_WT_HER_BIN2			69.67193122
+#define UP_WT_HER_BIN2			85.1545826
+#define	LOW_WT_HER_BIN3			110.8875294
+#define	UP_WT_HER_BIN3			135.5292026
+// Average intrinsic noise in bins
+#define LOW_WT_IN_NOISE_BIN1	0.180811783
+#define UP_WT_IN_NOISE_BIN1		0.220992179
+#define	LOW_WT_IN_NOISE_BIN2	0.068670316
+#define UP_WT_IN_NOISE_BIN2		0.083930386
+#define	LOW_WT_IN_NOISE_BIN3	0.033190505
+#define UP_WT_IN_NOISE_BIN3		0.040566173
+// Average extrinsic noise in bins
+#define	LOW_WT_EX_NOISE_BIN1	0.240734921
+#define	UP_WT_EX_NOISE_BIN1		0.294231571
+#define	LOW_WT_EX_NOISE_BIN2	0.188858651
+#define	UP_WT_EX_NOISE_BIN2		0.23082724
+#define LOW_WT_EX_NOISE_BIN3	0.153505449
+#define UP_WT_EX_NOISE_BIN3		0.187617771
+// Score
+#define	MAX_SCORE 				5
 // EXIT STATUS
 #define EXIT_SUCCESS			0
 #define EXIT_MEMORY_ERROR		1

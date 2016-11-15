@@ -33,7 +33,8 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 
 int simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set_index, embryo& em){
 	int score = 0; 
-	cout << term->blue << "Simulating set " << term->reset << set_index << " . . ." << endl;
+	double sresScore;
+	//cout << term->blue << "Simulating set " << term->reset << set_index << " . . ." << endl;
 	
 	for (int i = 0; i < ip.num_mutants; i++){
 		// create mutant directory
@@ -45,9 +46,11 @@ int simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set_in
 		score += simulate_mutant(ip, sd, rs, em, set_index, ip.mutants[i]);
 		// revert_rates
 	}
+	// real score to pass into SRES
+	sresScore = (double) MAX_SCORE - score;
 	// print score to pipe if necessary
 	if (ip.piping){
-		write_pipe((double *) &score, ip);
+		write_pipe(&sresScore, ip);
 	}
 	return score;
 }
@@ -55,7 +58,7 @@ int simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set_in
 int simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, int set_index, int mutant_index){
 	int mutant_score = 0;
 	// reset embryo : for each cell:
-	// cons: current_cons to all 0; last_change_time to all 0; time_record to all 0; cons_record to all 0
+	// cons: current_cons to all 0; cons_record to all 0
 	// propen[NUM_REACTIONS] all to 0
 	// next_internal [NUM_REACTIONS]  all to 0
 	// current_internal [NUM_REACTIONS] all to 0
@@ -64,13 +67,12 @@ int simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, int s
 	em.reset();
 	// core simulation
 	core_simulation(ip, sd, rs, em);
-	cout << em.cell_list[1]->absolute_time << endl;
-	cout << ((em.cell_list[1]->cons_record)[KEEPMH1])->size() << endl;
 	// test conditions
 	features wtf(ip.num_cells, ip.num_bin);
+	
 	if (mutant_index == WT){
 		mutant_score = test_wildtype(ip, em, wtf);
-	}
+	}	
 	// print data if necessary
 	if (ip.print_cons){
 		print_concentrations(ip, set_index, mutant_index, em);
@@ -89,40 +91,29 @@ void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	bool done = false;
 	int record_per_done = ip.check_done_granularity / ip.record_granularity; // How many time to checks record per time checking done
 	
-	// Delta K array: how much time will pass from the current time for each reaction to occur, plus the firing time for the soonest-complete delayed reaction 
-	double* deltaKArray = new double[NUM_REACTIONS + 1];
-	
-	// some parameters used repeatedly during simulation
-	int next_fire; // index of reaction that will fire next
-	double delta; // time from current time a reaction will occur
-	int complete_delay_index;
-	
+	// next reaction to denote parameters about what reaction in what cell and whether it is a complete delay reaction
+	// that is firing next
+	next_reaction nr;
+
 	// enter simulation loop
 	while (!done){
 		for (int i = 0; i < record_per_done; i++){
 			for (int j = 0; j < ip.record_granularity; j++){
-				for (int k = 0; k < ip.num_cells; k++){
-					// 1.find Delta
-					next_fire = update_deltaK_array(&deltaKArray, em.cell_list[k]);
-					delta = deltaKArray[next_fire];
+				// 1.find the next reaction
+				find_next_reaction(nr, em);
+			
+				// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
+				update_current_internal(em, nr.delta);
 					
-					// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
-					update_current_internal(em.cell_list[k], delta);
-					
-					// 3. update absolute time for cell
-					(em.cell_list[k])->absolute_time = (em.cell_list[k])->absolute_time + delta;
-					
-					// 4. take actions based on what reaction is chosen to fire: update concentrations and also update propensity for involved reactions
-					if (next_fire != NUM_REACTIONS){ // if either non-delay reaction or delay reaction initiate 
-						// Call reaction: update concentrations and also propensity
-						sd.reac_funs[next_fire](em, k, sd, rs, false); // complete = false because for delay reactions, this is just initiation
-						// find the next firing time of the reaction that just fired
-						find_next_firing(em.cell_list[k], next_fire);
-					}
-					else{ // if a delayed reaction is complete: update concentrations, propen, get rid of the reaction in the priority queue
-						complete_delay_index = (em.cell_list[k]->cdelay)->soonest_reaction();
-						sd.reac_funs[complete_delay_index](em, k, sd, rs, true);
-					}
+				// 3. update absolute time of embryo
+				em.absolute_time = em.absolute_time + nr.delta;
+				
+				// 4. reactions happen
+				sd.reac_funs[nr.reaction_index](em, nr.cell_index, sd, rs, nr.delay_complete);
+				
+				// 5. find the next firing time of the reaction that just initiated
+				if (! (nr.delay_complete)){
+					find_next_firing(em.cell_list[nr.cell_index], nr.reaction_index);
 				}
 			}
 			// transfer data from current time and concentration to record time and concentration
@@ -132,8 +123,6 @@ void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 		done = check_done(em, ip);
 		
 	}
-	
-	delete [] deltaKArray;
 }
 
 
@@ -162,33 +151,57 @@ void calculate_initial_next_internal(embryo& em){
 	}
 }
 
-int update_deltaK_array(double** deltaKArray, cell* current_cell){
-	double current_min = INFINITY;
-	double min_index = NUM_REACTIONS;
-	for (int i = 0; i < NUM_REACTIONS; i++){
-		if ((current_cell->propen)[i] != 0){
-			// deltak = (Pk - Tk) / ak (next internal - current_internal) / propensity;
-			(*deltaKArray)[i] = ((current_cell->next_internal)[i] - (current_cell->current_internal)[i]) / (current_cell->propen)[i];
-			if ((*deltaKArray)[i] < current_min){
-				current_min = (*deltaKArray)[i];
-				min_index = i;
+void find_next_reaction(next_reaction& nr, embryo& em){
+	double min_delta = INFINITY;
+	double current_delta;
+	int c_index;
+	int r_index;
+	bool d_complete = false;
+	cell* cc;
+	for (int i = 0; i < em.num_cells; i++){
+		cc = em.cell_list[i];
+		for (int j = 0; j < NUM_REACTIONS; j++){
+			if ((cc->propen)[j] > 0){
+				// deltak = (Pk - Tk) / ak (next internal - current_internal) / propensity
+				current_delta = ((cc->next_internal)[j] - (cc->current_internal)[j]) / ((cc->propen)[j]);
+				if (min_delta > current_delta){
+					min_delta = current_delta;
+					c_index = i;
+					r_index = j;
+				}
 			}
 		}
-		else{
-			(*deltaKArray)[i] = INFINITY;
+	}
+	
+	for (int i = 0; i < em.num_cells; i++){
+		cc = em.cell_list[i];
+		if (!((cc->cdelay)->is_empty())){
+			current_delta = (cc->cdelay)->see_soonest() - em.absolute_time;
+			if (min_delta > current_delta){
+				min_delta = current_delta;
+				c_index = i;
+				r_index = (cc->cdelay)->soonest_reaction();
+				d_complete = true;
+			}
 		}
 	}
-	(*deltaKArray)[NUM_REACTIONS] = ((current_cell)->cdelay)->see_soonest() - (current_cell->absolute_time);
-	if ((*deltaKArray)[NUM_REACTIONS] < current_min){
-		min_index = NUM_REACTIONS;
-	}
-	return min_index;
+	
+	nr.cell_index = c_index;
+	nr.reaction_index = r_index;
+	nr.delay_complete = d_complete;
+	nr.delta = min_delta;
 }
 
-void update_current_internal(cell* current_cell, double delta){
-	// For each reaction: Tk = Tk + Ak * Delta
-	for (int i = 0; i < NUM_REACTIONS; i++){
-		(current_cell->current_internal)[i] = (current_cell->current_internal)[i] + (current_cell->propen)[i] * delta;
+
+
+void update_current_internal(embryo& em, double delta){
+	cell* cc;
+	// For each reaction in each cell: Tk = Tk + Ak * Delta
+	for (int i = 0; i < em.num_cells; i++){
+		cc = em.cell_list[i];
+		for (int j = 0; j < NUM_REACTIONS; j++){
+			(cc->current_internal)[j] = (cc->current_internal)[j] + (cc->propen)[j] * delta;
+		}
 	}
 }
 
@@ -204,15 +217,12 @@ void transfer_to_record(embryo& em, input_params& ip){
 			(em.cell_list[i])->transfer_record(ip.print_states[j], NUM_KEEP_STATES + j);
 		}
 	}
+	em.transfer_time_record();
 }
 
 bool check_done(embryo& em, input_params& ip){
-	for (int i = 0; i < ip.num_cells; i++){
-		if (em.cell_list[i]->absolute_time >= ip.time_total){
-			cout << "First done cell: " << i+ 1 << endl;
-			cout << "Absolute time: " << em.cell_list[i]->absolute_time;
-			return true;
-		}
+	if (em.absolute_time >= ip.time_total){
+		return true;
 	}
 	return false;
 }

@@ -12,6 +12,8 @@ void test_deltaK_array(double**);
 void test_transfer_record (embryo&);
 void test_peaks_troughs();
 void test_process_smooth_data();
-void test_process_binned_data();
+void test_process_noise_data();
+void test_slices();
+void test_process_slices(embryo&, features&);
 #endif
 

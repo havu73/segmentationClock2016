@@ -11,7 +11,7 @@
 #include <queue> // Needed for priority queue inside complete_delay
 #include <cmath> // Need for INFINITY in priority queue
 #include "macros.hpp"
-
+#include "memory.hpp"
 //use standard name_space here
 using namespace std;
 
@@ -163,7 +163,7 @@ struct input_params{
 		this->num_sets = 1;
 		
 		// timing
-		this->time_total = 600;
+		this->time_total = 610;
 		
 		//seeds
 		this->seed = 0;
@@ -199,8 +199,8 @@ struct input_params{
 		this->num_bin = DEFAULT_NUM_BIN;
 		
 		// parameters about data transfer and time control of the simulation
-		this->check_done_granularity = 200;
-		this->record_granularity = 100;
+		this->check_done_granularity = 2000;
+		this->record_granularity = 1000;
 	}
 	
 	~input_params(){
@@ -332,10 +332,8 @@ struct parameters {
 struct cell{
 	bool initialized; // Whether or not this struct's data have been initialized
 	int * current_cons;
-	double * last_absolute_change_time;
 	vector<int>** cons_record; // a list of vectors (dynamically growing lists) containing the concentrations of different states over time. 
 							   // Needed to keep records of concentrations of some states over time
-	vector<double> ** time_record; 	// a list of (#print_states) vectors recording time points 
 									// that the concentration of each states that we keep record of is recorded
 	int num_records;
 	
@@ -343,7 +341,6 @@ struct cell{
 	double * next_internal;		// next internal time of reactions in the system
 	double * current_internal; // current internal time of reactions in the system
 	complete_delay * cdelay; // the priority queue of the complettion time of delay reactions going on at a specific moment in the cell
-	double absolute_time; // the current absolute time of the cell
 	int index; 	//the index of the cell inside the embryo
 	
 	cell(){
@@ -357,27 +354,22 @@ struct cell{
 		else{
 			this->num_records = NUM_KEEP_STATES + ip.num_print_states;
 			this->current_cons = new int [NUM_STATES];
-			this->last_absolute_change_time = new double [NUM_STATES];
 			this->cons_record = new vector<int> * [NUM_KEEP_STATES + ip.num_print_states];
-			this->time_record = new vector<double> * [NUM_KEEP_STATES + ip.num_print_states];
 
 			for (int i = 0; i < NUM_KEEP_STATES; i++){
 				(this->cons_record)[i] = new vector<int>;
-				(this->cons_record)[i]->reserve(60000);
-				(this->time_record)[i] = new vector<double>;
-				(this->time_record)[i]->reserve(60000);
+				(this->cons_record)[i]->reserve(50000);
 			}
 			
 			for (int i = 0; i < ip.num_print_states; i++){
 				(this->cons_record)[i + NUM_KEEP_STATES] = new vector<int>;
-				(this->time_record)[i + NUM_KEEP_STATES] = new vector<double>; 
+				(this->cons_record)[i + NUM_KEEP_STATES]->reserve(50000);
 			}
 			
 			this->propen = new double[NUM_REACTIONS];
 			this->next_internal = new double [NUM_REACTIONS];
 			this->current_internal = new double [NUM_REACTIONS];
 			this->cdelay = new complete_delay();
-			this->absolute_time = 0;
 			this->index = index;
 			this->initialized = true;
 		}
@@ -385,34 +377,27 @@ struct cell{
 	
 	void reset(){
 		memset(this->current_cons, 0, sizeof(int) * NUM_STATES);
-		memset(this->last_absolute_change_time, 0, sizeof(double) * NUM_STATES);
 		
 		for (int i = 0; i < (this->num_records); i++){
 			(this->cons_record)[i]->clear();
-			(this->time_record)[i]->clear();
 		}
 		
 		memset(this->propen, 0, sizeof(double) * NUM_REACTIONS);
 		memset(this->next_internal, 0, sizeof(double) * NUM_REACTIONS);
 		memset(this->current_internal, 0, sizeof(double) * NUM_REACTIONS);
-		this->absolute_time = 0;
 		(this->cdelay)->reset();
 	}
 	
 	void transfer_record(int real_index, int record_index){
 		(this->cons_record[record_index])->push_back(this->current_cons[real_index]);
-		(this->time_record[record_index])->push_back(this->last_absolute_change_time[real_index]);
 	}
 	
 	~cell(){
 		delete [] this->current_cons;
-		delete [] this->last_absolute_change_time;
 		for (int i = 0; i < (this->num_records); i++){
 			delete (this->cons_record)[i];
-			delete (this->time_record)[i];
 		}
 		delete [] this->cons_record;
-		delete [] this->time_record;
 		delete [] this->propen;
 		delete [] this->next_internal;
 		delete [] this->current_internal;
@@ -423,10 +408,14 @@ struct cell{
 struct embryo{
 	cell ** cell_list;
 	int ** neighbors;
+	vector<double>* time_record;
+	double absolute_time;
 	int neighbor_per_cell; // number of neighbors that each cell has
 	int num_cells;
 	
 	embryo(input_params& ip){
+		this->time_record = new vector<double>;
+		(this->time_record)->reserve(50000);
 		this->num_cells = ip.num_cells;
 		this->cell_list = new cell * [this->num_cells];
 		for (int i = 0; i < num_cells; i++){
@@ -507,17 +496,24 @@ struct embryo{
 		}
 	}
 	
+	void transfer_time_record(){
+		(this->time_record)->push_back(this->absolute_time);	
+	}
+	
 	void reset(){
 		for (int i = 0; i < this->num_cells; i ++){
 			((this->cell_list)[i])->reset();
 		}
+		(this->time_record)->clear();
 	}
 	
 	~embryo(){
 		delete [] this->cell_list;
+		/*
 		for (int i = 0; i < this->num_cells; i++){
 			delete [] this->neighbors[i];
 		}
+		* */
 		delete [] this->neighbors;
 	}
 };
@@ -864,58 +860,108 @@ struct features{
 };
 
 struct binned_data{
-	vector<int> ** her1_data;
-	vector<int> ** her7_data;
-	int * total_her1;
-	int * total_her7;
-	double * avg_her1;
-	double * avg_her7;
+	vector<double> ** her;
+	vector<double> ** in_noise;
+	vector<double> ** ex_noise;
 	int num_bin;
 	
 	binned_data(){
-		this->her1_data = new vector<int>* [DEFAULT_NUM_BIN];
-		this->her7_data = new vector<int>* [DEFAULT_NUM_BIN];
-		this->num_bin = DEFAULT_NUM_BIN;
-		for (int i = 0; i < DEFAULT_NUM_BIN; i++){
-			(this->her1_data)[i] = new vector<int>;
-			(this->her1_data)[i]->reserve(30000);
-			(this->her7_data)[i] = new vector<int>;
-			(this->her7_data)[i]->reserve(30000);
-		}
-		this->total_her1 = new int[DEFAULT_NUM_BIN];
-		this->total_her7 = new int[DEFAULT_NUM_BIN];
-		this->avg_her1 = new double[DEFAULT_NUM_BIN];
-		this->avg_her7 = new double[DEFAULT_NUM_BIN];
+		this->initialize(DEFAULT_NUM_BIN);
 	}
 	
 	binned_data(int num_bin){
-		this->her1_data = new vector<int>* [num_bin];
-		this->her7_data = new vector<int>* [num_bin];
-		this->num_bin = num_bin;
-		for (int i = 0; i < num_bin; i++){
-			(this->her1_data)[i] = new vector<int>;
-			(this->her1_data)[i]->reserve(30000);
-			(this->her7_data)[i] = new vector<int>;
-			(this->her7_data)[i]->reserve(30000);
-
-		}
-		this->total_her1 = new int[num_bin];
-		this->total_her7 = new int[num_bin];
-		this->avg_her1 = new double[num_bin];
-		this->avg_her7 = new double[num_bin];
-		memset(this->total_her1, 0, sizeof(int) * num_bin);
-		memset(this->total_her7, 0, sizeof(int) * num_bin);
-		memset(this->avg_her1, 0, sizeof(double) * num_bin);
-		memset(this->avg_her7, 0, sizeof(double) * num_bin);
+		this->initialize(num_bin);
 	}
 	
+	void initialize (int num_bin){
+		this->her = new vector<double> * [num_bin];
+		this->in_noise = new vector<double> * [num_bin];
+		this->ex_noise = new vector<double> * [num_bin];
+		for (int i = 0; i < num_bin; i ++){
+			this->her[i] = new vector<double>;
+			(this->her[i])->reserve(40);
+			this->in_noise[i] = new vector<double>;
+			(this->in_noise[i])->reserve(40);
+			this->ex_noise[i] = new vector<double>;
+			(this->ex_noise[i])->reserve(40);
+		}
+		this->num_bin = num_bin;
+	}
 	~binned_data(){
 		for (int i = 0; i < this->num_bin; i ++){
-			delete (this->her1_data)[i];
-			delete (this->her7_data)[i];
+			delete (this->her)[i];
+			delete (this->in_noise)[i];
+			delete (this->ex_noise)[i];
 		}
-		delete [] this->her1_data;
-		delete [] this->her7_data;
+		delete [] this->her;
+		delete [] this->in_noise;
+		delete [] this->ex_noise;
+	}
+};
+
+struct slices{
+	double ** her1; // concentrations of her1 mRNA of each cell in the slice
+	double ** her7; // concentrations of her7 mRNA of each cell in the slice
+	double * avg_h1;
+	double * avg_h7;
+	double * avg_her;
+	double * in_noise; // intrinsic noise in this slice
+	double * ex_noise; // extrinsic noise in this slice
+	double min_her;
+	double max_her;
+	int total_cells;
+	slices(int num_cells){
+		this->her1 = new double* [NUM_SLICES];
+		this->her7 = new double* [NUM_SLICES];
+		this->avg_h1 = new double [NUM_SLICES];
+		this->avg_h7 = new double [NUM_SLICES];
+		this->avg_her = new double [NUM_SLICES];
+		this->in_noise = new double [NUM_SLICES];
+		this->ex_noise = new double [NUM_SLICES];
+		this->total_cells = num_cells;
+		for (int i = 0; i < NUM_SLICES; i++){
+			this->her1[i] = new double[num_cells];
+			this->her7[i] = new double[num_cells];
+		}
+		this->initiate_values();
+	}
+	
+	void initiate_values (){
+		for (int i = 0; i < NUM_SLICES; i++){
+			for (int j = 0;j < this->total_cells; j ++){
+				this->her1[i][j] = -1;
+				this->her7[i][j] = -1;
+			}
+			this->avg_h1[i] = -1;
+			this->avg_h7[i] = -1;
+			this->avg_her[i] = -1;
+			this->in_noise[i] = -1;
+			this->ex_noise[i] = -1;
+		}
+	}
+	~slices(){
+		for (int i = 0; i < NUM_SLICES; i++){
+			delete [] this->her1[i];
+			delete [] this->her7[i];
+		}
+		delete [] this->her1;
+		delete [] this->her7;
+		delete [] this->avg_h1;
+		delete [] this->avg_h7;
+		delete [] this->avg_her;
+		delete [] this->in_noise;
+		delete [] this->ex_noise;
+	}
+};
+
+struct next_reaction{
+	int reaction_index;
+	int cell_index;
+	double delta;
+	bool delay_complete;
+	
+	next_reaction(){
+		this->delta= INFINITY;
 	}
 };
 

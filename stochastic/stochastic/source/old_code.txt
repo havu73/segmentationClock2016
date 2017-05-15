@@ -1,0 +1,94 @@
+	/*
+	// Middle ptt
+	if (mid_peak == mid_trough && peaks->size() > troughs->size()){
+		double peak_con = smooth_record[mp_index1];
+		double trough1 = smooth_record[mt_index1];
+		double trough2 = smooth_record[mt_index2];
+		if (trough1 == 0){
+			trough1 = 1;
+		}
+		if (trough2 == 0){
+			trough2 = 1;
+		}
+		fts.mid_ptt[con_index][cell_index] = peak_con / ((trough1 + trough2) / 2);
+	}
+	else if (mid_peak == mid_trough && peaks->size() < troughs->size()){
+		double trough = smooth_record[mt_index1];
+		if (trough == 0){
+			trough = 1;
+		}
+		double peak1 = smooth_record[mp_index1];
+		double peak2 = smooth_record[mp_index2];
+		fts.mid_ptt[con_index][cell_index] = ((peak1 + peak2) / 2) / trough;
+	}
+	else if (mid_peak == mid_trough && peaks->size() == troughs->size()){
+		if (peaks->size() % 2 == 0){
+			double peak1 = smooth_record[mp_index1];
+			double peak2 = smooth_record[mp_index2];
+			double trough1 = smooth_record[mt_index1];
+			double trough2 = smooth_record[mt_index2];
+			if (trough1 == 0){
+				trough1 = 1;
+			}
+			if (trough2 == 0){
+				trough2 = 1;
+			}
+			fts.mid_ptt[con_index][cell_index] = ((peak1 + peak2) / 2) / ((trough1 + trough2) / 2);
+		}
+		else{
+			double peak = smooth_record[mp_index1];
+			double trough = smooth_record[mt_index1];
+			if (trough == 0){
+				trough = 1;
+			}
+			fts.mid_ptt[con_index][cell_index] = peak / trough;
+		}
+	}
+	else if (mid_peak > mid_trough){
+		double trough = smooth_record[mt_index1];
+		double peak1 = smooth_record[mp_index1];
+		double peak2 = smooth_record[mp_index2];
+		if (trough == 0){
+			trough = 1;
+		}
+		fts.mid_ptt[con_index][cell_index] = ((peak1 + peak2) / 2) / trough;
+	}
+	else if (mid_peak < mid_trough){
+		double trough1 = smooth_record[mt_index1];
+		double trough2 = smooth_record[mt_index2];
+		if (trough1 == 0){
+			trough1 = 1;
+		}
+		if (trough2 == 0){
+			trough2 = 1;
+		}
+		double peak = smooth_record[mp_index1];
+		fts.mid_ptt[con_index][cell_index] = peak / ((trough1 + trough2) / 2);
+	}
+	
+	int lp_index1 = peaks->back();
+	int lp_index2 = peaks->at(peaks->size() - 2);
+	int lt_index1 = troughs->back();
+	int lt_index2 = troughs->at(troughs->size() - 2);
+	if (lp_index1 < lt_index1){ // last peak after last trough
+		double peak = smooth_record[lp_index1];
+		double trough1 = smooth_record[lt_index1];
+		double trough2 = smooth_record[lt_index2];
+		if (trough1 == 0){
+			trough1 = 1;
+		}
+		if (trough2 == 0){
+			trough2 = 1;
+		}
+		fts.last_ptt[con_index][cell_index] = peak / ((trough1 + trough2) / 2);
+	}
+	else {
+		double peak1 = smooth_record[lp_index1];
+		double peak2 = smooth_record[lp_index2];
+		double trough = smooth_record[lt_index1];
+		if (trough == 0){
+			trough = 1;
+		}
+		fts.last_ptt[con_index][cell_index] = ((peak1 + peak2) / 2) / trough;
+	}
+	* */

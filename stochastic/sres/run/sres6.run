@@ -1,0 +1,11 @@
+#PBS -N wildtype 
+#PBS -l nodes=1:ppn=10 
+#PBS -l mem=2GB 
+#PBS -l file=100MB 
+#PBS -M hvu@colgate.edu 
+#PBS -q biomath 
+#PBS -j oe 
+#PBS -o output.pbs-job6
+#PBS -l walltime=480:00:00 
+cd $PBS_O_WORKDIR 
+time mpirun -np 5				../sres				-p 30				-r ../ranges/new_range_051317.txt				-f ../../stochastic/stochastic				-t ../output/wt6.txt -G 1 -a -ss 10 > wildtype6.txt

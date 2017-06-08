@@ -104,6 +104,7 @@ struct input_params{
 	char* out_dir; // The path of the output directory for concentrations or oscillation features, default=none	
 	bool has_out_dir; // whether user specify an output directory or not
 	bool print_features; // whether to print noise, period and amplitude features or not
+	bool print_rates; 	// whether or not we should print rates
 	
 	// Debugging file stream
 	char* debug_file;
@@ -164,6 +165,7 @@ struct input_params{
 		this->out_dir = new char [30];
 		this->has_out_dir = false;
 		this->print_features = false;
+		this->print_rates = false;
 		
 		// debugging files
 		this->debug_file = new char[30];
@@ -291,23 +293,43 @@ struct complete_delay{
 
 struct rates {
 	//rates bases and rates for mutants
-	double* data;  // Base rates taken from the current parameter set
-	
-	explicit rates () {
-		this->data = new double [NUM_RATES];
-		memset(this->data, 0, sizeof(double) * NUM_RATES);
+	double** data;  // rates taken from the current parameter set, each cell has its own set of rates [SET_INDEX][rate_index]
+	int num_cells; // number of cells
+	double** perturb_rates; // rates of pertubations for parameters in cells [set_index][rate_index]
+	explicit rates (input_params& ip) {
+		this->num_cells = ip.num_cells;
+		this->data = new double* [ip.num_cells];
+		for (int i = 0; i < ip.num_cells; i ++){
+			this->data[i] = new double [NUM_NETWORK_RATES];
+			memset(this->data[i], 0, sizeof(double) * NUM_NETWORK_RATES);
+		}
+		this->perturb_rates = new double* [ip.num_cells];
+		for (int i = 0; i < ip.num_cells; i ++){
+			this->perturb_rates[i] = new double[NUM_NETWORK_RATES];
+			memset(this->perturb_rates[i], 0, sizeof(double) * NUM_NETWORK_RATES);
+		}
 	}
 	
 	void clear (){
+		for (int i = 0; i < this->num_cells; i ++){
+			delete [] (this->data[i]);
+			delete [] (this->perturb_rates[i]);
+		}
 		delete [](this->data);
+		delete [](this->perturb_rates);
 	}
 	
 	void reset(){
-		memset(this->data, 0, sizeof(double) * NUM_RATES);
+		for (int i = 0; i < this->num_cells; i ++){
+			memset(this->data[i], 0, sizeof(double) * NUM_NETWORK_RATES);
+		}
+		for (int i = 0; i < this->num_cells; i ++){
+			memset(this->perturb_rates[i], 0, sizeof(double) * NUM_NETWORK_RATES);
+		}
 	}
 	
 	~rates () {
-		delete [](this->data);
+		this->clear();
 	}
 };
 
@@ -519,8 +541,6 @@ struct embryo{
 		delete [] this->neighbors;
 	}
 };
-
-
 
 
 struct sim_data{

@@ -2,7 +2,7 @@ import sys, os
 from subprocess import call
 
 sto_sim = "../../stochastic/stochastic/stochastic"
-good_sets = range(5)
+good_sets = range(1)
 dir_head = "../sto/set_"
 dir_tail = "/wildtype"
 out_dir = "../peak_trough_fig"
@@ -44,7 +44,7 @@ def main():
 	sto_out_dir = "../sto"
 	out_dir = "../sto/check_new_smooth"
 	#create_param_file(good_sets, param_100, param_file)
-	run_stochastic(param_file, 1, out_dir)
+	#run_stochastic(param_file, 1, out_dir)
 	draw_sto_data(out_dir, out_dir, good_sets)
 	
 	#for i in range(len(good_sets)):

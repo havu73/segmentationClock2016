@@ -43,5 +43,9 @@ inline double pk_dist () {
 	return log(1.0 / unif_dist());
 }
 
+inline double doubleRand(double fMin, double fMax){
+	double f = unif_dist();
+	return fMin + f * (fMax - fMin);
+}
 #endif
 

@@ -194,7 +194,7 @@ struct input_params {
 	input_params () {
 		this->ranges_file = NULL;
 		this->sim_file = copy_str("../stochastic/stochastic");
-		this->num_dims = 37;
+		this->num_dims = 38;
 		this->pop_parents = 3;
 		this->pop_total = 30;
 		this->generations = 5000;

@@ -12,12 +12,12 @@ extern terminal* term; // Declared in init.cpp
 
 void simulate_all_params_sets(input_params& ip, parameters& pr){
 	embryo em(ip);
-	rates rs;
+	rates rs (ip);
 	// declare reactions and propensities: lists of function calls to use throughout the simulation
 	sim_data sd;
 	init_propensities(sd);
 	init_reactions(sd);
-	init_seeds(ip);
+	//init_seeds(ip);
 	
 	// create debug file if necessary
 	/*
@@ -33,10 +33,14 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 	for (int i = 0; i < ip.num_sets; i++){
 		// process the rates so that we can run the model
 		process_rates(rs, pr, i);
-
+		cout << "Done processing rates" << endl;
 		//Create set directories
-		if (ip.print_cons || ip.print_features){
+		if (ip.print_cons || ip.print_features || ip.print_rates){
 			create_set_directory(i , ip);
+		}
+		// if users sepcify that they want to print out the rates
+		if (ip.print_rates) { 
+			print_perturb_rates(ip, rs, pr, i);
 		}
 		
 		// simulate each set
@@ -48,8 +52,14 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 
 
 void process_rates(rates& rs, parameters& pr, int set_index){
-	for (int i = 0; i < NUM_RATES; i++){
-		rs.data[i] = pr.data[set_index][i];
+	double low_perturb = 1 - (pr.data[set_index][PERTURB] / (double) 100);
+	double high_perturb = 1 + (pr.data[set_index][PERTURB] / (double) 100);
+	for (int i = 0; i < rs.num_cells; i++){ // for each cell
+		for (int j = 0; j < NUM_NETWORK_RATES; j ++) { // for each rate related to our system
+			double pert_factor = doubleRand(low_perturb, high_perturb);  // geenrate a random number in the allowed perturb range
+			rs.perturb_rates[i][j] = pert_factor; 
+			rs.data[i][j] = pr.data[set_index][j] * pert_factor; // set the rate for this cell based on the perturb rates we specified
+		}
 	}
 }
 
@@ -57,11 +67,6 @@ double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set
 	double score = 0; 
 	double sresScore;
 	//cout << term->blue << "Simulating set " << term->reset << set_index << " . . ." << endl;
-	/*
-	if (ip.print_debug){
-		print_rates(ip, rs);
-	}
-	*/
 	for (int i = 0; i < ip.num_mutants; i++){
 		// create mutant directory
 		if (ip.print_cons || ip.print_features){

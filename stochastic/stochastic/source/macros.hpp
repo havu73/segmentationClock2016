@@ -88,7 +88,10 @@
 #define KDG7PH11	35		//dissociation constant for gene7 and protein dimer H1 H1
 #define KDGDPH11	36		//dissociation constant for gene Delta and protein dimer H1 H1
 
-#define NUM_RATES	37		//total number of rates in the system
+#define NUM_NETWORK_RATES	37
+#define PERTURB		37		// maximum variation each parameter in each cell should be 
+
+#define NUM_RATES	38		//total number of rates in the system
 
 // REACTIONS
 #define RPSH1		0		//mh1 --> ph1

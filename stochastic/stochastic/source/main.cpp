@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 	check_input_params(ip);
 	
 	init_verbosity(ip);
-	//init_seeds(ip);
+	init_seeds(ip);
 	// Calculate the maximum conditional score that we can get
 	if (ip.num_mutants != NUM_MUTANTS){ // Since the default is to run all mutants available, and ip.max_cond_score is default MAX_SCORE, we only need to calculate score when users specify something different. 
 										// Dont worry about cases when users enter the same number of mutants but they are wrongly entered, because that gets checked in accept_input_params
@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
 	// process parameters
 	parameters pr(ip.num_sets);
 	read_sim_params(ip, pr, params_data, ranges_data);
-	
 	simulate_all_params_sets(ip, pr);
 	
 	t = clock() - t; 
@@ -68,9 +67,11 @@ void usage (const char* message) {
 	cout << "Usage: [-option [value]]. . . [--option [value]]. . ." << endl;
 	cout << "-i,  --input-params-file  	[filename]   : the relative filename of the parameter sets input file, default=none" << endl;
 	cout << "-r,  --ranges-file        	[filename]   : the relative filename of the parameter ranges input file, default=none" << endl;
-	cout << "-ps, --print-states	   	[string]		: the space separated list of state indices that users want to keep track of over time. MH1, MH7, MD are default. Ex: -ps \"4 5 6\"" << endl;
+	cout << "-u,  --perturb-file      	[filename]   : the relative filename of the perturbation parameters input file, default=none" << endl;
+	cout << "-ps, --print-states	   	[string]	 : the space separated list of state indices that users want to keep track of over time. MH1, MH7, MD are default. Ex: -ps \"4 5 6\"" << endl;
 	cout << "-pc, --print-cons         	[N/A]        : print concentration values to the specified output directory, default=false" << endl;
 	cout << "-pf, --print-features		[N/A]		 : print noise, period and amplitude features of the simulation, default=false" << endl;
+	cout << "-pr, --print-rates			[N/A]		 : print perturbed rates for each cell, default=false" << endl;
 	cout << "-pd, --print-debug			[filename]	 : print all simulation information to debug" << endl;
 	cout << "-od, --output-directory   	[directory]  : the relative directory where output of the program is saved, default=none" << endl;
 	cout << "-ns, --num-parameter-sets 	[int]        : the number of parameters for which to simulate the model, min=1, default=1" << endl;

@@ -35,7 +35,7 @@ void reactionRPSH1 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	}	
 	else{// delay reaction initiated
-		double next_complete_time = em.absolute_time + rs.data[NPH1];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NPH1];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RPSH1, next_complete_time);
 	}
 }
@@ -52,7 +52,7 @@ void reactionRPSH7 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{ // delay reaction initiated
-		double next_complete_time = em.absolute_time + rs.data[NPH7];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NPH7];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RPSH7, next_complete_time);
 	}
 }
@@ -71,7 +71,7 @@ void reactionRPSD (embryo& em, int cell_index, sim_data& sd, rates& rs, bool com
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NPD];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NPD];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RPSD, next_complete_time);
 	}
 }
@@ -252,7 +252,7 @@ void reactionRMSH1 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NMH1];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NMH1];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RMSH1, next_complete_time);
 	}
 }
@@ -269,7 +269,7 @@ void reactionRMSH1N (embryo& em, int cell_index, sim_data& sd, rates& rs, bool c
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NMH1];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NMH1];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RMSH1N, next_complete_time);
 	}	
 }
@@ -332,7 +332,7 @@ void reactionRMSH7 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NMH7];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NMH7];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RMSH7, next_complete_time);
 	}
 }
@@ -349,7 +349,7 @@ void reactionRMSH7N (embryo& em, int cell_index, sim_data& sd, rates& rs, bool c
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NMH7];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NMH7];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RMSH7N, next_complete_time);
 	}
 }
@@ -412,7 +412,7 @@ void reactionRMSD (embryo& em, int cell_index, sim_data& sd, rates& rs, bool com
 		// 3
 		(em.cell_list[cell_index]->cdelay)->complete_soonest();
 	} else{
-		double next_complete_time = em.absolute_time + rs.data[NMD];
+		double next_complete_time = em.absolute_time + rs.data[cell_index][NMD];
 		(em.cell_list[cell_index]->cdelay)->initiate_delay(RMSD, next_complete_time);
 	}
 }

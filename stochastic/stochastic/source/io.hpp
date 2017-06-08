@@ -19,4 +19,5 @@ void print_one_state_concentrations(embryo&, int, char**);
 void write_pipe(double*, input_params&);
 void print_smooth_data (input_params&, embryo&, peak_trough&, int, int);
 void print_features_data (input_params&, embryo&, features&, int, int);
+void print_perturb_rates(input_params&, rates&, parameters&, int);
 #endif

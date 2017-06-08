@@ -187,6 +187,9 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 			} else if (option_set(option, "-pc", "--print-cons")){ // Users only needs to specify this when they want to print any states other than the default MH1, MH7, MD
 				ip.print_cons = true;
 				i--;
+			} else if (option_set(option, "-pr", "--print-rates")){
+				ip.print_rates = true;
+				i--;
 			} else if (option_set(option, "-pd", "--print-debug")){
 				ensure_nonempty(option, value);
 				store_filename(&(ip.debug_file), value);

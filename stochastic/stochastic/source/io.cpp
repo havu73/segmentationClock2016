@@ -485,3 +485,39 @@ void print_features_data (input_params& ip, embryo& em, features& fts, int set_i
 	features_file << fts.extrinsic[fts.num_bin - 1] << "\n";
 	delete [] filename;
 }
+
+void print_perturb_rates(input_params& ip, rates& rs, parameters& pr, int set_index){
+	char* filename = new char [100];
+	if (ip.has_out_dir){
+		sprintf(filename, "%s/set_%d/rates.txt", ip.out_dir, set_index);
+	}
+	else{
+		sprintf(filename, "set_%d/rates.txt", set_index);
+	}
+	ofstream file_rates;
+	open_file(&file_rates, filename, true);
+	// first print num cells, num rates
+	file_rates << rs.num_cells << "," << NUM_NETWORK_RATES << endl;
+	// second print the base rates
+	file_rates << pr.data[set_index][0];
+	for (int i = 1; i < NUM_RATES; i ++){
+		file_rates << "," << pr.data[set_index][i];
+	}
+	file_rates << endl;
+	// third print the perturbation rates, each cell has its own line
+	for (int i = 0; i < rs.num_cells; i ++){
+		file_rates << rs.perturb_rates[i][0];
+		for (int j = 1; j < NUM_NETWORK_RATES; j ++){
+			file_rates << "," << rs.perturb_rates[i][j];
+		}
+		file_rates << endl;
+	}
+	// fourth print the actual rates, each cell has its own line
+	for (int i = 0; i < rs.num_cells; i ++){
+		file_rates << rs.data[i][0];
+		for (int j = 1; j < NUM_NETWORK_RATES; j ++){
+			file_rates << "," << rs.data[i][j];
+		}
+		file_rates << endl;
+	}
+}

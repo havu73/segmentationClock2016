@@ -81,8 +81,12 @@ def main():
 			usage()
 			exit(0)
 		elif arg == '-l':
-			license
+			license()
 			exit(0)
+		else:
+			print "Parameter: " + arg + "is not supported by this program. Please make sure your input is created correctly."
+			usage()
+			exit(0) 
 	check_missing_parameter(mendatory_param, c)
 	process_sres_good_folders(folderIn, inFname, range(start_file_index, end_file_index), score_threshold, out_fname)
 	print "Done"

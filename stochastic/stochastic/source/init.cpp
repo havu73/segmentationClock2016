@@ -417,9 +417,7 @@ void read_sim_params(input_params& ip, parameters& pr, input_data& params_data, 
 	// OPTION 1: PIPING
 	if (ip.piping) { 
 		cout << term->reset;
-		//cout << "Reading pipe " << term->reset << "(file descriptor " << ip.pipe_in << ") . . . ";
 		read_pipe(pr, ip); 
-		//term->done();
 	// OPTION 2: PARAMETER FILE
 	} else if (ip.read_params) { // If the user specified a parameter sets input file
 		read_file(&params_data);

@@ -40,7 +40,7 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 		}
 		
 		// simulate each set
-		double set_score = simulate_one_param_set(ip, sd, rs, i, em);
+		simulate_one_param_set(ip, sd, rs, i, em);
 		// reset rates after each set
 		rs.reset();
 	}
@@ -96,10 +96,11 @@ double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, in
 
 	em.reset();
 	// core simulation
-	core_simulation(ip, sd, rs, em);
+	bool out_of_bound = core_simulation(ip, sd, rs, em); // simulate, and return whether or not the simulations results in moments where the states levels are above our accepted bounds
+	
 	// test conditions
 	features wtf(ip.num_cells, ip.num_bin);
-	if (mutant_index == WT){
+	if (mutant_index == WT && (!out_of_bound)){
 		mutant_score = test_wildtype(ip, em, wtf, set_index);
 	}	
 	// print data if necessary
@@ -109,7 +110,10 @@ double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, in
 	return mutant_score;
 }
 
-void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
+/*
+ * Return whether or not the states are found out of bound.
+ */
+bool core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	// update initial conditions : all gene has current concentrations to 2
 	update_initial_concentrations(em);
 	// calculate propensity for each reaction
@@ -131,40 +135,67 @@ void core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	transfer_to_record(em, ip);
 	// Initialize the time that the record is taken
 	double current_record_time = 0;
+	int record_per_check = int((double)MINUTE_PER_SLICE / ip.record_granularity);
+	int check_done_time = 0;
 	
+	// number indicating the time step between two intervals to check for states_out_of_bound
+	int bound_check_index = 0;
 	// enter simulation loop
 	while (!done){
-		for (int i = 0; i < ip.check_done_granularity; i++){
-			// 1.find the next reaction
-			find_next_reaction(nr, em);
-			// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
-			update_current_internal(em, nr.delta);
-			// 3. update absolute time of embryo
-			em.absolute_time = em.absolute_time + nr.delta;
-			// 4. reactions happen
-			sd.reac_funs[nr.reaction_index](em, nr.cell_index, sd, rs, nr.delay_complete);
-			// 5. find the next firing time of the reaction that just initiated
-			if (! (nr.delay_complete)){
-				find_next_firing(ip, em.cell_list[nr.cell_index], nr.reaction_index);
-			}
-			/*
-			if (ip.print_debug){
-				print_one_round_simulation(em, ip, nr);
-			}
-			*/
-			
-			if ((em.absolute_time - current_record_time) >= ip.record_granularity){
-				// ip.record_granularity time has passed, now transfer record and update new current_record_time
-				// transfer data from current time and concentration to record time and concentration
-				transfer_to_record(em, ip);
-				current_record_time += ip.record_granularity;
-			}	
+		// 1.find the next reaction
+		find_next_reaction(nr, em);
+		// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
+		update_current_internal(em, nr.delta);
+		// 3. update absolute time of embryo
+		em.absolute_time = em.absolute_time + nr.delta;
+		// 4. reactions happen
+		sd.reac_funs[nr.reaction_index](em, nr.cell_index, sd, rs, nr.delay_complete);
+		// 5. find the next firing time of the reaction that just initiated
+		if (! (nr.delay_complete)){
+			find_next_firing(ip, em.cell_list[nr.cell_index], nr.reaction_index);
 		}
-		// check whether done or not
-		done = check_done(em, ip);
+		/*
+		if (ip.print_debug){
+			print_one_round_simulation(em, ip, nr);
+		}
+		*/
+		
+		if ((em.absolute_time - current_record_time) >= ip.record_granularity){
+			// ip.record_granularity time has passed, now transfer record and update new current_record_time
+			// transfer data from current time and concentration to record time and concentration
+			transfer_to_record(em, ip);
+			current_record_time += ip.record_granularity;
+			bound_check_index += 1;
+			
+			if (bound_check_index == record_per_check){ // MINUTE_PER_SLICE minutes have passed
+				// 1. Check that the states are not out of bound every MINUTE_PER_SLICE minutes
+				bool out_of_bound = states_out_of_bound(em);
+				if (out_of_bound){
+					return out_of_bound;
+				}
+				bound_check_index = 0;
+				// 2. Check that time for simulation is up
+				check_done_time += (int) MINUTE_PER_SLICE;
+				if (check_done_time == (int)ip.time_total){ //time is up
+					done = true;
+				}
+			}
+		}
 	}
+	return false;
 }
 
+bool states_out_of_bound(embryo& em){
+	for (int i = 0; i < em.num_cells; i ++){
+		if (((em.cell_list[i])->current_cons)[MH1] > MRNA_LIM){ return true; }
+		if (((em.cell_list[i])->current_cons)[MH7] > MRNA_LIM){ return true; }
+		if (((em.cell_list[i])->current_cons)[MD] > MRNA_LIM){ return true; }
+		if (((em.cell_list[i])->current_cons)[PH1] > PROTEIN_LIM){ return true; }
+		if (((em.cell_list[i])->current_cons)[PH7] > PROTEIN_LIM){ return true; }
+		if (((em.cell_list[i])->current_cons)[PD] > PROTEIN_LIM){ return true; }
+	}
+	return false;
+}
 
 void update_initial_concentrations (embryo& em){
 	for (int i = 0; i < em.num_cells; i++){
@@ -252,7 +283,7 @@ void update_current_internal(embryo& em, double delta){
 }
 
 void find_next_firing(input_params& ip, cell* current_cell, int reaction_index){
-	double random_number = pk_dist();
+	//double random_number = pk_dist();
 	(current_cell->next_internal)[reaction_index] = (current_cell->next_internal)[reaction_index] + pk_dist(); 
 	/*
 	if (ip.print_random){

@@ -85,15 +85,16 @@ def calculate_exp_bounds(noise_list, multiplier):
 		result.append(num* multiplier)
 	return result
 
+	
 def plot_expected_binned_noise (ax, num_bins):
 	assert num_bins == EXP_NUM_BINS, "The number of bins that you provided is not the same as the number of bins in experimental data"
-	x_cons_corner = calculate_exp_bounds(EXP_AVG_CONS, 0.9)
-	x_cons_width = calculate_exp_bounds(EXP_AVG_CONS, 0.2)
+	x_cons_corner = calculate_exp_bounds(EXP_AVG_CONS, 0.8)
+	x_cons_width = calculate_exp_bounds(EXP_AVG_CONS, 0.4)
 	y_noise_corner = []
 	y_noise_width = []
 	for i in range(EXP_NUM_BINS):
-		y_noise_corner.append(calculate_exp_bounds(EXP_NOISE[i], 0.9))
-		y_noise_width.append(calculate_exp_bounds(EXP_NOISE[i], 0.2))
+		y_noise_corner.append(calculate_exp_bounds(EXP_NOISE[i], 0.8))
+		y_noise_width.append(calculate_exp_bounds(EXP_NOISE[i], 0.4))
 	#draw
 	for i in range(len(EXP_NOISE)):
 		for j in range(EXP_NUM_BINS):

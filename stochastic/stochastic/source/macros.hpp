@@ -186,26 +186,26 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define WT_LOW_PER			22//27
 #define WT_HIGH_PER			38//33
 // Average Her mRNA levels in bins
-#define	LOW_WT_HER_BIN1			28.19997886
-#define UP_WT_HER_BIN1			34.46664083
-#define	LOW_WT_HER_BIN2			69.67193122
-#define UP_WT_HER_BIN2			85.1545826
-#define	LOW_WT_HER_BIN3			110.8875294
-#define	UP_WT_HER_BIN3			135.5292026
+#define	LOW_WT_HER_BIN1			25.06664788
+#define UP_WT_HER_BIN1			37.59997181
+#define	LOW_WT_HER_BIN2			61.93060553
+#define UP_WT_HER_BIN2			92.89590829
+#define	LOW_WT_HER_BIN3			98.56669283
+#define	UP_WT_HER_BIN3			147.8500392
 // Average intrinsic noise in bins
-#define LOW_WT_IN_NOISE_BIN1	0.180811783
-#define UP_WT_IN_NOISE_BIN1		0.220992179
-#define	LOW_WT_IN_NOISE_BIN2	0.068670316
-#define UP_WT_IN_NOISE_BIN2		0.083930386
-#define	LOW_WT_IN_NOISE_BIN3	0.033190505
-#define UP_WT_IN_NOISE_BIN3		0.040566173
+#define LOW_WT_IN_NOISE_BIN1	0.160721585
+#define UP_WT_IN_NOISE_BIN1		0.241082377
+#define	LOW_WT_IN_NOISE_BIN2	0.061040281
+#define UP_WT_IN_NOISE_BIN2		0.091560421
+#define	LOW_WT_IN_NOISE_BIN3	0.029502671
+#define UP_WT_IN_NOISE_BIN3		0.044254006
 // Average extrinsic noise in bins
-#define	LOW_WT_EX_NOISE_BIN1	0.240734921
-#define	UP_WT_EX_NOISE_BIN1		0.294231571
-#define	LOW_WT_EX_NOISE_BIN2	0.188858651
-#define	UP_WT_EX_NOISE_BIN2		0.23082724
-#define LOW_WT_EX_NOISE_BIN3	0.153505449
-#define UP_WT_EX_NOISE_BIN3		0.187617771
+#define	LOW_WT_EX_NOISE_BIN1	0.213986597
+#define	UP_WT_EX_NOISE_BIN1		0.320979895
+#define	LOW_WT_EX_NOISE_BIN2	0.167874357
+#define	UP_WT_EX_NOISE_BIN2		0.251811535
+#define LOW_WT_EX_NOISE_BIN3	0.136449288
+#define UP_WT_EX_NOISE_BIN3		0.204673932
 
 // PARAMETERS FOR TESTS IN DELTA MUTANT
 // ranges for H1 and H7 spatial amplitude
@@ -237,6 +237,10 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define UP_DELTA_EX_NOISE_BIN2	0.645999064
 #define LOW_DELTA_EX_NOISE_BIN3	0.162110177
 #define UP_DELTA_EX_NOISE_BIN3	0.603766761
+
+// LIMITS OF MRNA and PROTEINs
+#define MRNA_LIM				200
+#define PROTEIN_LIM				3000
 
 // Score
 #define	MAX_SCORE 				6

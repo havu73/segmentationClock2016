@@ -175,7 +175,7 @@ struct input_params{
 		this->num_sets = 1;
 		
 		// timing
-		this->time_total = 610;
+		this->time_total = 310;
 		
 		//seeds
 		this->sim_seed = 0;

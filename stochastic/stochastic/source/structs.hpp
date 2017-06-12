@@ -127,7 +127,7 @@ struct input_params{
 	// Mutant parameters
 	int * mutants; // List of index of mutants that users want to simulate and test. Default : all possible mutants
 	int num_mutants; // number of mutants to be simulated. Default = NUM_MUTANTS
-	int max_cond_score; // maximum scores when all conditions specified by users are passed.
+	double max_cond_score; // maximum scores when all conditions specified by users are passed.
 	
 	// Piping data
 	bool piping; // Whether or not input and output should be piped (as opposed to written to disk), default=false
@@ -189,7 +189,7 @@ struct input_params{
 			(this->mutants)[i] = i;
 		}
 		this->num_mutants = NUM_MUTANTS;
-		this->max_cond_score = TOTAL_SC;
+		this->max_cond_score = (double) TOTAL_SC;
 		
 		//piping data
 		this->piping = false;
@@ -309,7 +309,7 @@ struct rates {
 			memset(this->perturb_rates[i], 0, sizeof(double) * NUM_NETWORK_RATES);
 		}
 	}
-	
+
 	void clear (){
 		for (int i = 0; i < this->num_cells; i ++){
 			delete [] (this->data[i]);
@@ -843,10 +843,15 @@ struct features{
 	double** avg_period;	// [KEEP_STATE][cell]
 	double** mid_ptt;		// [KEEP STATE][cell]
 	double** last_ptt;		// [KEEP STATE][cell]
-	double** correlation; 	// [cell] we only calculate correlations between cell 0 and other cells in the embryo
+	double** correlation; 	// [KEEP_STATE][cell] we only calculate correlations between cell 0 and other cells in the embryo
+	double avg_correlation; 	// average of correlation
 	double* intrinsic;		// [bin]
 	double* extrinsic;		// [bin]
 	double* avg_cons;		// [bin]
+	double slices_in_noise; 	// average intrinsic noise in all slices
+	double slices_ex_noise;	// average extrinsic noise in all slices
+	double slices_tot_noise;	// average total noise in all slices
+	double* cvs_bin;	// her mRNA levels covarriance in 5 bins, each bin consist of data collected in 60 mins of simulation
 	int num_cells;
 	int num_bin;
 	
@@ -857,6 +862,7 @@ struct features{
 		this->mid_ptt = new double* [NUM_KEEP_STATES];
 		this->last_ptt = new double* [NUM_KEEP_STATES];
 		this->correlation = new double* [NUM_KEEP_STATES];
+		this->avg_correlation = 0;
 		for (int i = 0; i < NUM_KEEP_STATES; i ++){
 			this->avg_amplitude[i] = new double [num_cells];
 			this->avg_period[i] = new double [num_cells];
@@ -868,9 +874,14 @@ struct features{
 		this->extrinsic = new double[num_bin];
 		this->avg_cons = new double [num_bin];
 		this->num_bin = num_bin;
+		this->slices_in_noise = 0;
+		this->slices_ex_noise = 0;
+		this->slices_tot_noise = 0;
+		this->cvs_bin = new double[CVS_BIN];
 	}
 	
 	void reset(){
+		this->correlation = 0;
 		for (int i = 0; i < NUM_KEEP_STATES; i ++){
 			memset(this->avg_amplitude[i], 0, sizeof(double) * this->num_cells);
 			memset(this->avg_period[i], 0, sizeof(double) * this->num_cells);
@@ -881,6 +892,10 @@ struct features{
 		memset(this->intrinsic, 0, sizeof(double) * this->num_bin);
 		memset(this->extrinsic, 0, sizeof(double) * this->num_bin);
 		memset(this->avg_cons, 0, sizeof(double) * this->num_bin);
+		this->slices_in_noise = 0;
+		this->slices_ex_noise = 0;
+		this->slices_tot_noise = 0;
+		memset(this->cvs_bin, 0, sizeof(double) * CVS_BIN);
 	}
 	
 	~features(){
@@ -900,6 +915,7 @@ struct features{
 		delete [] this->intrinsic;
 		delete [] this->extrinsic;
 		delete [] this->avg_cons;
+		delete [] this->cvs_bin;
 	}
 };
 

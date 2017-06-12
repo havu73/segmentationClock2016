@@ -104,6 +104,8 @@ def plot_expected_binned_noise (ax, num_bins):
 	
 	
 def plot_binned_noise(out_fname, num_bins, avg_cons, in_noise, ex_noise):
+	print in_noise
+	print ex_noise
 	fig = plt.figure(figsize = (6,4), dpi=300)
 	ax = fig.add_subplot(111)
 	total_noise = [i + e for i,e in zip(in_noise, ex_noise)]
@@ -140,8 +142,8 @@ def run_stochastic(param_file, num_sets, out_dir):
 	if 1 == call(sto_command):
 		exit(1)
 
-H1_AMP = [30,50]
-H7_AMP = [40,55]
+H1_AMP = [10,70]
+H7_AMP = [10,70]
 
 def plot_amplitude(out_fname, amplitude_h1, amplitude_h7):
 	fig = plt.figure(figsize = (3,4), dpi=300)
@@ -235,5 +237,5 @@ def main():
 	plot_binned_noise("../../stochastic/stochastic/set_0/wildtype/logNoise_her" + str(0) + ".jpg", 3, avg_cons, in_noise, ex_noise)
 	plot_amplitude("../../stochastic/stochastic/set_0/wildtype/amplitude" + str(0) + ".jpg", amplitude_h1, amplitude_h7)
 	plot_period("../../stochastic/stochastic/set_0/wildtype/period" + str(0) + ".jpg", period_h1, period_h7)
-	draw_overlapping_cells_smooth(4, "../../stochastic/stochastic/set_0/wildtype/cells_smooth.fig", "../../stochastic/stochastic/set_0/wildtype/mHer1_smoothed.txt")
+	#draw_overlapping_cells_smooth(4, "../../stochastic/stochastic/set_0/wildtype/cells_smooth.fig", "../../stochastic/stochastic/set_0/wildtype/mHer1_smoothed.txt")
 main()

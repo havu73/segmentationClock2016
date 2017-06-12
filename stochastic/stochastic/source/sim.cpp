@@ -18,22 +18,11 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 	init_propensities(sd);
 	init_reactions(sd);
 	//init_seeds(ip);
+	// create debug files if needed here
 	
-	// create debug file if necessary
-	/*
-	if (ip.print_debug){
-		open_debug_steam(ip);
-	}
-	*/
-	/*
-	if (ip.print_random){
-		open_random_steam(ip);
-	}
-	*/
 	for (int i = 0; i < ip.num_sets; i++){
 		// process the rates so that we can run the model
 		process_rates(rs, pr, i);
-		cout << "Done processing rates" << endl;
 		//Create set directories
 		if (ip.print_cons || ip.print_features || ip.print_rates){
 			create_set_directory(i , ip);
@@ -66,6 +55,7 @@ void process_rates(rates& rs, parameters& pr, int set_index){
 double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set_index, embryo& em){
 	double score = 0; 
 	double sresScore;
+	features wtf(ip.num_cells, ip.num_bin); // structures to store wildtype features, because this will be many times throughout the simulation
 	//cout << term->blue << "Simulating set " << term->reset << set_index << " . . ." << endl;
 	for (int i = 0; i < ip.num_mutants; i++){
 		// create mutant directory
@@ -73,12 +63,13 @@ double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set
 			create_mutant_directory(set_index, ip.mutants[i], ip);
 		}
 		// change rates based on mutant
-		// simulate_mutant
-		score += simulate_mutant(ip, sd, rs, em, set_index, ip.mutants[i]);
+		change_rates_based_on_mutants(rs, i);
+		// simulate_mutant, then test conditions of such mutants, then report back the score
+		score += simulate_mutant(ip, sd, rs, em, wtf,set_index, ip.mutants[i]);
 		// revert_rates
 	}
 	// real score to pass into SRES
-	sresScore = (double) MAX_SCORE - score;
+	sresScore = (double) ip.max_cond_score - score;
 	// print score to pipe if necessary
 	if (ip.piping){
 		write_pipe(&sresScore, ip);
@@ -89,9 +80,22 @@ double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set
 	return sresScore;
 }
 
-double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, int set_index, int mutant_index){
+void change_rates_based_on_mutants(rates& rs, int mutant_index){
+	if (mutant_index == DELTA_MUTANT) {
+		for (int i = 0; i < rs.num_cells; i ++){
+			rs.data[i][PSD] = 0;
+		}
+	}
+}
+
+/*
+ * 1, Simulate the mutant
+ * 2, Test mutant conditions
+ * 3, Report mutant score
+ */
+double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, features& wtf, int set_index, int mutant_index){
 	double mutant_score = 0;
-	// reset embryo : for each cell:
+	// reset embryo will do the following for each cell:
 	// cons: current_cons to all 0; cons_record to all 0
 	// propen[NUM_REACTIONS] all to 0
 	// next_internal [NUM_REACTIONS]  all to 0
@@ -104,10 +108,13 @@ double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, in
 	bool out_of_bound = core_simulation(ip, sd, rs, em); // simulate, and return whether or not the simulations results in moments where the states levels are above our accepted bounds
 	
 	// test conditions
-	features wtf(ip.num_cells, ip.num_bin);
+	features fts(ip.num_cells, ip.num_bin);
 	if (mutant_index == WT && (!out_of_bound)){
 		mutant_score = test_wildtype(ip, em, wtf, set_index);
 	}	
+	else if (mutant_index == DELTA_MUTANT && (!out_of_bound)){
+		mutant_score = test_delta(ip, em, fts, wtf, set_index);
+	}
 	// print data if necessary
 	if (ip.print_cons){
 		print_concentrations(ip, set_index, mutant_index, em);
@@ -124,11 +131,6 @@ bool core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	// calculate propensity for each reaction
 	calculate_initial_propensity(sd, rs, em);
 	calculate_initial_next_internal(ip, em);
-	/*
-	if (ip.print_debug){
-		print_initial_simulation(ip, em);
-	}
-	*/
 	// time keeping variables
 	bool done = false;
 		
@@ -159,11 +161,6 @@ bool core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 		if (! (nr.delay_complete)){
 			find_next_firing(ip, em.cell_list[nr.cell_index], nr.reaction_index);
 		}
-		/*
-		if (ip.print_debug){
-			print_one_round_simulation(em, ip, nr);
-		}
-		*/
 		
 		if ((em.absolute_time - current_record_time) >= ip.record_granularity){
 			// ip.record_granularity time has passed, now transfer record and update new current_record_time

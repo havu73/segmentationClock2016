@@ -336,17 +336,23 @@ void get_print_states_data(input_params& ip, char* input){
  * ip.mutants is a list of integers corresponding to indices of mutants
  * To see the indicies of mutants hard-coded in this program, go to macros.hpp
  * example users' input: -M "wt p1 p2", or -M "0 1 2 3"
+ * At the same time, the function will also find the maximum number of scores that the mutants can get.
+ * This number is reported to ip.max_cond_score
  */
 void get_mutant_data(input_params& ip, char* input){
-	/*
+	ip.max_cond_score = 0;
 	char * result;
 	int index = 0; 
 	result = strtok(input, " \t\n"); // Each mutant is separated from each other by space
 	while (result != NULL){
 		if ((strcmp(result, "wt") == 0) || (strcmp(result, "0") == 0)){
 			ip.mutants[index] = WT;
+			ip.max_cond_score += WT_SCORE;
 		}
-		
+		else if ((strcmp(result, "delta") == 0) || (strcmp(result, "1") == 0)){
+			ip.mutants[index] = DELTA_MUTANT;
+			ip.max_cond_score += DELTA_SCORE;
+		}
 		else {
 			usage("Mutant input is errornous");
 		}
@@ -355,7 +361,7 @@ void get_mutant_data(input_params& ip, char* input){
 		result = strtok(NULL, " \t\n");
 	}
 	ip.num_mutants = index;
-	*/
+	
 }
 
 

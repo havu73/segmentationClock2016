@@ -148,15 +148,15 @@
 
 #define NUM_KEEP_STATES		2
 
-// MUTANTS
+// MUTANTS and MUTANT SCORE
 #define WT					0
-#define DELTA				1
+#define WT_SCORE			6
+#define DELTA_MUTANT		1
+#define DELTA_SCORE			1
 #define NUM_MUTANTS			1	// should be 2
 
 //MUTANTS SCORES
-#define WT_SC				0	// should be different
-
-#define TOTAL_SC			0	// should be different
+#define TOTAL_SC			7	// should be different
 
 // PARAMETERS FOR SMOOTHING DATA AND CHECKING PEAKS AND TROUGHS
 #define WINDOW_SIZE			30 // each smoothed data point is equal to the average of data point and 200 points to the left and 200 points ot the right
@@ -169,14 +169,18 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 	return NUM_MID_PT + NUM_LAST_PT + 1;
 }
 
-// PARAMETERS FOR CHECKING CORRELATIONS
-#define LOW_BOUND_WT_CORR 	0.7
-
 // PARAMETERS FOR BINNING DATA
 #define	DEFAULT_NUM_BIN 	3
 
+// number of bins for calculating covarriance
+#define CVS_BIN		5
+#define CVS_BIN_TIME	60
+
 // PARAMETER FOR SLICING
 #define MINUTE_PER_SLICE	5
+
+// CORRELATION WT THRESHOLD
+#define WT_CORR_SCORE		0.75
 
 // CONDITIONS CHECKING PARAMETERS
 #define UPPER_BOUND_HER		250
@@ -211,6 +215,8 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define UP_WT_EX_NOISE_BIN3		0.204673932
 
 // PARAMETERS FOR TESTS IN DELTA MUTANT
+// Ratio between delta noise / wildtype noise
+#define DELTA_NOISE_WT_RATIO	1.4
 // ranges for H1 and H7 spatial amplitude
 #define DELTA_H1_AMP_LOW		12
 #define DELTA_H1_AMP_HIGH		30
@@ -257,4 +263,6 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define EXIT_PIPE_WRITE_ERROR	5
 #define EXIT_INPUT_ERROR		6
 
+#define MAX(x, y) ((x) < (y) ? (y) : (x))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif

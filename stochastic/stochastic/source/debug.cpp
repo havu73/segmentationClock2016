@@ -1,6 +1,7 @@
 #include "debug.hpp"
 #include "macros.hpp"
 #include "tests.hpp"
+#include "feats.hpp"
 void test_dependency_graph(sim_data& sd){
 	for (int i = 0; i < NUM_REACTIONS; i++){
 		cout << "Reaction " << i << "  ";
@@ -242,7 +243,7 @@ void test_process_smooth_data(){
 	(cc->cons_record[0])->push_back(6);
 	
 	features fts (1, DEFAULT_NUM_BIN);
-	process_smooth_data(ip, em, fts, 0);
+	process_wt_smooth_data(ip, em, fts, 0);
 	for (int i = 0; i < ip.num_cells; i ++){
 		cout << "********* Cell number: " << i + 1 << endl;
 		for (int j = 0; j < NUM_KEEP_STATES; j ++){
@@ -362,7 +363,7 @@ void test_process_noise_data(){
 	(cc->cons_record[1])->push_back(7);
 	(cc->cons_record[1])->push_back(6);
 	features fts (1, DEFAULT_NUM_BIN);
-	process_noise_data(em, fts, ip);
+	process_wt_noise_data(em, fts, ip);
 	for (int i = 0; i < DEFAULT_NUM_BIN; i ++){
 		cout << "Intrinsic noise: " << fts.intrinsic[i] << endl;
 		cout << "Extrinsic noise: " << fts.extrinsic[i] << endl;
@@ -381,5 +382,5 @@ void test_slices(){
 
 void test_process_slices(embryo& em, features& fts){
 	input_params ip;
-	process_noise_data(em, fts, ip);
+	process_wt_noise_data(em, fts, ip);
 }

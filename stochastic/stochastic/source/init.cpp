@@ -261,9 +261,6 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 					usage("The number of cells in the system need to be at least 2");
 				}
 				ip.num_cells = num_cells;
-			} else if (option_set(option, "-cdg", "--check-done-granularity")){
-				ensure_nonempty(option, value);
-				ip.check_done_granularity = atoi(value);
 			}else if (option_set(option, "-rg", "--record-granularity")){
 				ensure_nonempty(option, value);
 				ip.record_granularity = atoi(value);
@@ -353,6 +350,10 @@ void get_mutant_data(input_params& ip, char* input){
 			ip.mutants[index] = DELTA_MUTANT;
 			ip.max_cond_score += DELTA_SCORE;
 		}
+		else if ((strcmp(result, "dapt") == 0) || (strcmp(result, "2")) == 0){
+			ip.mutants[index] = DAPT_MUTANT;
+			ip.max_cond_score += DAPT_SCORE;
+		}
 		else {
 			usage("Mutant input is errornous");
 		}
@@ -375,11 +376,8 @@ void check_input_params (input_params& ip){
 	if (!(ip.piping || ip.read_params || ip.read_ranges)) {
 		usage("Parameter must be piped in via -I or --pipe-in, read from a file via -i or --params-file, or generated from a ranges file and number of sets via -R or --ranges-file and -p or --parameter-sets, respectively.");
 	}
-	if (ip.check_done_granularity <= 0){
-		usage("Check_done_granularity needs to be at least 1.");
-	}
 	if (ip.record_granularity <= 0){
-		usage("Record_granularity needs to be at least 1.");
+		usage("Record_granularity needs to be positive.");
 	}
 }
 

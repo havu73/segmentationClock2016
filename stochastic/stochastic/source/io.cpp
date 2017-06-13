@@ -13,7 +13,7 @@
 using namespace std;
 
 extern terminal* term; // Declared in init.cpp
-char* mutant_dir_name [] = {"wildtype"};
+char* mutant_dir_name [] = {"wildtype", "delta", "dapt"};
 char* state_file_name [] = {"mHer1", "mHer7", "mDelta", "pHer1", 
 	"pHer7", "pDelta", "dimerH1H1", "dimerH1H7", "dimerH7H7", "geneH1", "geneH1N", "geneH1PH11", "geneH7",
 	"geneH7N", "geneH7PH11", "geneDelta", "geneDeltaPH11"};

@@ -30,11 +30,6 @@ int main(int argc, char** argv) {
 	
 	init_verbosity(ip);
 	init_seeds(ip);
-	// Calculate the maximum conditional score that we can get
-	if (ip.num_mutants != NUM_MUTANTS){ // Since the default is to run all mutants available, and ip.max_cond_score is default MAX_SCORE, we only need to calculate score when users specify something different. 
-										// Dont worry about cases when users enter the same number of mutants but they are wrongly entered, because that gets checked in accept_input_params
-		calculate_max_cond_score(ip);
-	}
 	// declare input_data objects based on users' input about input file names. The buffer of these objects is empty now, and will be filled in right after this declaration section
 	input_data params_data(ip.params_file);
 	input_data ranges_data(ip.ranges_file);
@@ -83,7 +78,6 @@ void usage (const char* message) {
 	cout << "-v,  --verbose            	[N/A]        : print detailed messages about the program and simulation state, default=unused" << endl;
 	cout << "-q,  --quiet              	[N/A]        : hide the terminal output, default=unused" << endl;
 	cout << "-nc, --num-cells          	[N/A]        : number of cells in the sytem to simulate. Default = 16" << endl;
-	cout << "-cdg,--check-done-granularity[int] 	 : number of reactions fired in between two times that the program check whether it is done or not. Default = 120" << endl;
 	cout << "-rg, --record-granularity	[int]		 : number of reactions fired in between two times that we record the concentrations of states we care about. Default = 30" << endl;
 	cout << "We require that check-done-granularity and record-granularity are both at least 1, and that check-done-granularity is invisible by record-granularity" << endl;
 	cout << "-l,  --licensing          [N/A]        : view licensing information (no simulations will be run)" << endl;

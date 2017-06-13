@@ -8,4 +8,4 @@
 #PBS -o output.pbs-job2
 #PBS -l walltime=480:00:00 
 cd $PBS_O_WORKDIR 
-time mpirun -np 5	../sres		-p 20	-P 3	-r ../ranges/range2014_double.txt		-f ../../stochastic/stochastic	-t ../output/wt2.txt -G 1  -a -ss 10 > wildtype2.txt
+time mpirun -np 5	../sres		-p 20	-P 3	-r ../ranges/refined061317_rawk.txt		-f ../../stochastic/stochastic	-t ../output/wt2.txt -G 1  -a -ss 10 > wildtype2.txt

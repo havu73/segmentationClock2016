@@ -64,8 +64,13 @@ double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set
 		}
 		// change rates based on mutant
 		change_rates_based_on_mutants(rs, i);
-		// simulate_mutant, then test conditions of such mutants, then report back the score
-		score += simulate_mutant(ip, sd, rs, em, wtf,set_index, ip.mutants[i]);
+		if (ip.mutants[i] != DAPT_MUTANT){
+			// simulate_mutant, then test conditions of such mutants, then report back the score
+			score += simulate_mutant(ip, sd, rs, em, wtf, set_index, ip.mutants[i]);
+		}
+		else if (ip.mutants[i] == DAPT_MUTANT){
+			simulate_dapt_mutant(ip, sd, rs, em, wtf, set_index, ip.mutants[i]);
+		}
 		// revert_rates
 	}
 	// real score to pass into SRES
@@ -122,6 +127,102 @@ double simulate_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, fe
 	return mutant_score;
 }
 
+double simulate_dapt_mutant(input_params& ip, sim_data& sd, rates& rs, embryo& em, features& wtf, int set_index, int mutant_index){
+	double mutant_score = 0;
+	// reset embryo will do the following for each cell:
+	// cons: current_cons to all 0; cons_record to all 0
+	// propen[NUM_REACTIONS] all to 0
+	// next_internal [NUM_REACTIONS]  all to 0
+	// current_internal [NUM_REACTIONS] all to 0
+	// cdelay empty
+	// internal_time = 0
+	em.reset();
+	core_simulation_dapt(ip, sd, rs, em);
+	return mutant_score;
+}
+
+bool core_simulation_dapt(input_params& ip, sim_data& sd, rates& rs, embryo& em){
+	// Core simulation for dapt
+	// update initial conditions : all gene has current concentrations to 2
+	update_initial_concentrations(em);
+	// calculate propensity for each reaction
+	calculate_initial_propensity(sd, rs, em);
+	calculate_initial_next_internal(ip, em);
+	// time keeping variables
+	bool done = false;
+		
+	// next reaction to denote parameters about what reaction in what cell and whether it is a complete delay reaction
+	// that is firing next
+	next_reaction nr;
+	
+	// Keep the record at time 0
+	transfer_to_record(em, ip);
+	// Initialize the time that the record is taken
+	double current_record_time = 0;
+	int record_per_check = int((double)MINUTE_PER_SLICE / ip.record_granularity);
+	int check_done_time = 0;
+	
+	// number indicating the time step between two intervals to check for states_out_of_bound
+	int bound_check_index = 0;
+	
+	// an array of psd rates from cells in the embryo, used to store the original value whild delta is knocked down.
+	double* revert_rates = new double[ip.num_cells];
+	
+	// enter simulation loop
+	while (!done){
+		// 1.find the next reaction
+		find_next_reaction(nr, em);
+		// 2. update internal time for each reaction : Tk = Tk + Ak * DELTA
+		update_current_internal(em, nr.delta);
+		// 3. update absolute time of embryo
+		em.absolute_time = em.absolute_time + nr.delta;
+		// 4. reactions happen
+		sd.reac_funs[nr.reaction_index](em, nr.cell_index, sd, rs, nr.delay_complete);
+		// 5. find the next firing time of the reaction that just initiated
+		if (! (nr.delay_complete)){
+			find_next_firing(ip, em.cell_list[nr.cell_index], nr.reaction_index);
+		}
+		
+		if ((em.absolute_time - current_record_time) >= ip.record_granularity){
+			// ip.record_granularity time has passed, now transfer record and update new current_record_time
+			// transfer data from current time and concentration to record time and concentration
+			transfer_to_record(em, ip);
+			current_record_time += ip.record_granularity;
+			bound_check_index += 1;
+			
+			if (bound_check_index == record_per_check){ // MINUTE_PER_SLICE minutes have passed
+				// 1. Check that the states are not out of bound every MINUTE_PER_SLICE minutes
+				bool out_of_bound = states_out_of_bound(em);
+				if (out_of_bound){
+					delete[] revert_rates;
+					return out_of_bound;
+				}
+				bound_check_index = 0;
+				// 2. Check that time for simulation is up
+				check_done_time += (int) MINUTE_PER_SLICE;
+				if (check_done_time == (int)ip.time_total){ //time is up
+					done = true;
+				}
+				// if it is the start time of the dapt mutant, reverse all the values of psd to be 0
+				if(check_done_time == (int) INDUCTION_DAPT_TIME){
+					// get every psd rates to be 0
+					for (int i = 0; i < em.num_cells; i++){
+						revert_rates[i] = rs.data[i][PSD];
+						rs.data[i][PSD] = 0;
+					}
+				}
+				else if (check_done_time == (int) WITHDRAW_DAPT_TIME){
+					// revert the psd rates
+					for (int i = 0; i < em.num_cells; i++){
+						rs.data[i][PSD] = revert_rates[i];
+					}
+				}
+			}
+		}
+	}
+	delete[] revert_rates;
+	return false;
+}
 /*
  * Return whether or not the states are found out of bound.
  */

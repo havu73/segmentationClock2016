@@ -6,7 +6,7 @@
 
 // Levels of covarriance squared in wildtype in 5 bins of covarriance 
 double WT_CVS_BINS [5] = {0.225448775, 0.259325483, 0.278990378, 0.325803876, 0.42486995}; 
-
+double DELTA_CVS_BINS [5] = {};
 /*
  * Max_score : 5
  */
@@ -63,8 +63,8 @@ double test_wildtype(input_params& ip, embryo& em, features& wtf, int set_index)
 double test_wt_cvs(input_params& ip, features& wtf){
 	double score = 0;
 	for (int i = 0; i < CVS_BIN; i++){
-		double low = WT_CVS_BINS[i] * 0.8;
-		double high = WT_CVS_BINS[i] * 1.2;
+		double low = WT_CVS_BINS[i] * 0.6;
+		double high = WT_CVS_BINS[i] * 1.4;
 		if (wtf.cvs_bin[i] <= high && wtf.cvs_bin[i] >= low){
 			score += 1.0 / (double) CVS_BIN;
 		}
@@ -96,23 +96,6 @@ int test_delta(input_params& ip, embryo& em, features& fts, features& wtf, int s
 	return score;
 }
 
-bool check_mRNA_boundaries (embryo& em){
-	int num_steps = em.time_record->size();
-	for (int i = 0; i < em.num_cells; i++){
-		vector<int> * cch1 = (em.cell_list[i])->cons_record[KEEPMH1];
-		vector<int> * cch7 = (em.cell_list[i])->cons_record[KEEPMH7];
-		if (cch1->size() != num_steps || cch7->size() != num_steps){
-			cout << "Encounter a problem with size of cons and time record: num_steps: " << num_steps << "____ cons: " << cch1->size() << "____" << cch7->size() << endl;
-			return false;
-		}
-		for (int j = 0; j < num_steps; j++){
-			if ((cch1->at(j) + cch7->at(j)) > UPPER_BOUND_HER){
-				return false;
-			}
-		}
-	}
-	return true;
-}
 
 /*
  * Max score = 2

@@ -147,8 +147,6 @@ struct input_params{
 	int num_bin;
 	
 	// Parameters related to the speed and data collection of the simulation
-	int check_done_granularity; // every 120 reactions fired, we will check each cell and see whether or not they have reached a time point
-									  // above the time we need to simulate
 	double record_granularity;	// Every 30 reactions, we will record the concentrations and time points of states that users want to keep track of 
 	// For efficiency reasons, we require that check_done_granularity is divisible by record_granularity
 	input_params(){
@@ -209,7 +207,6 @@ struct input_params{
 		this->num_bin = DEFAULT_NUM_BIN;
 		
 		// parameters about data transfer and time control of the simulation
-		this->check_done_granularity = 5000;
 		this->record_granularity = 0.1;
 	}
 	

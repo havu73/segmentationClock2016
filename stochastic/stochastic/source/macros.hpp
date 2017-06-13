@@ -150,13 +150,19 @@
 
 // MUTANTS and MUTANT SCORE
 #define WT					0
-#define WT_SCORE			6
+#define WT_SCORE			7
 #define DELTA_MUTANT		1
 #define DELTA_SCORE			1
+#define DAPT_MUTANT			2
+#define DAPT_SCORE			0
 #define NUM_MUTANTS			1	// should be 2
 
 //MUTANTS SCORES
 #define TOTAL_SC			7	// should be different
+
+// PARAMETERS RELATED TO THE TIMING OF MUTANTS
+#define INDUCTION_DAPT_TIME	100
+#define WITHDRAW_DAPT_TIME	190
 
 // PARAMETERS FOR SMOOTHING DATA AND CHECKING PEAKS AND TROUGHS
 #define WINDOW_SIZE			30 // each smoothed data point is equal to the average of data point and 200 points to the left and 200 points ot the right
@@ -172,7 +178,7 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 // PARAMETERS FOR BINNING DATA
 #define	DEFAULT_NUM_BIN 	3
 
-// number of bins for calculating covarriance
+// number of bins for calculating coefficent of variation squared
 #define CVS_BIN		5
 #define CVS_BIN_TIME	60
 
@@ -183,7 +189,6 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define WT_CORR_SCORE		0.75
 
 // CONDITIONS CHECKING PARAMETERS
-#define UPPER_BOUND_HER		250
 #define LOWER_BOUND_PTT		1.5
 #define UPPER_BOUND_MTL		1.5
 #define WT_H1_AMP_LOW		10//35
@@ -249,10 +254,8 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 
 // LIMITS OF MRNA and PROTEINs
 #define MRNA_LIM				200
-#define PROTEIN_LIM				3000
+#define PROTEIN_LIM				2000
 
-// Score
-#define	MAX_SCORE 				6
 
 // EXIT STATUS
 #define EXIT_SUCCESS			0

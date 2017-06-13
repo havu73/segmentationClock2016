@@ -3,7 +3,6 @@
 #include "structs.hpp"
 double test_wildtype(input_params&, embryo&, features&, int);
 int test_delta(input_params&, embryo&, features&, features&, int);
-bool check_mRNA_boundaries (embryo&);
 double check_WT_sustained (input_params&, features&);
 double check_WT_amplitude (input_params&, features&);
 double check_WT_period (input_params&, features&);

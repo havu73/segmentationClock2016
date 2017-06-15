@@ -2,23 +2,15 @@
 #define PROPENSITY_HPP
 #include "structs.hpp"
 void propensityRPSH1(embryo&, int, rates&);
-void propensityRPSH7(embryo&, int, rates&);
 void propensityRPSD(embryo&, int, rates&);
 
 void propensityRPDH1(embryo&, int, rates&);
-void propensityRPDH7(embryo&, int, rates&);
 void propensityRPDD(embryo&, int, rates&);
 void propensityRPDH11(embryo&, int, rates&);
-void propensityRPDH17(embryo&, int, rates&);
-void propensityRPDH77(embryo&, int, rates&);
 
 void propensityRDAH11(embryo&, int, rates&);
-void propensityRDAH17(embryo&, int, rates&);
-void propensityRDAH77(embryo&, int, rates&);
 
 void propensityRDDH11(embryo&, int, rates&);
-void propensityRDDH17(embryo&, int, rates&);
-void propensityRDDH77(embryo&, int, rates&);
 
 void propensityRMDH1(embryo&, int, rates&);
 void propensityRMDH7(embryo&, int, rates&);

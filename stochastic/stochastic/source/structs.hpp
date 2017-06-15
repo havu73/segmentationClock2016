@@ -290,7 +290,7 @@ struct complete_delay{
 
 struct rates {
 	//rates bases and rates for mutants
-	double** data;  // rates taken from the current parameter set, each cell has its own set of rates [SET_INDEX][rate_index]
+	double** data;  // rates taken from the current parameter set, each cell has its own set of rates [cell_index][rate_index]
 	int num_cells; // number of cells
 	double** perturb_rates; // rates of pertubations for parameters in cells [set_index][rate_index]
 	explicit rates (input_params& ip) {
@@ -570,26 +570,14 @@ struct sim_data{
 	void construct_dependency(){
 		(this->dependency)[RPSH1][0] = RPDH1;
 		(this->dependency)[RPSH1][1] = RDAH11;
-		(this->dependency)[RPSH1][2] = RDAH17;
-		(this->dependency_size)[RPSH1] = 3;
-		
-		(this->dependency)[RPSH7][0] = RPDH7;
-		(this->dependency)[RPSH7][1] = RDAH17;
-		(this->dependency)[RPSH7][2] = RDAH77;
-		(this->dependency_size)[RPSH7] = 3;
-		
+		(this->dependency_size)[RPSH1] = 2;
+				
 		(this->dependency)[RPSD][0] = RPDD;
 		(this->dependency_size)[RPSD] = 1;
 		
 		(this->dependency)[RPDH1][0] = RPDH1;
 		(this->dependency)[RPDH1][1] = RDAH11;
-		(this->dependency)[RPDH1][2] = RDAH17;
-		(this->dependency_size)[RPDH1] = 3;
-		
-		(this->dependency)[RPDH7][0] = RPDH7;
-		(this->dependency)[RPDH7][1] = RDAH17;
-		(this->dependency)[RPDH7][2] = RDAH77;
-		(this->dependency_size)[RPDH7] = 3;
+		(this->dependency_size)[RPDH1] = 2;
 		
 		(this->dependency)[RPDD][0] = RPDD;
 		(this->dependency_size)[RPDD] = 1;
@@ -600,74 +588,31 @@ struct sim_data{
 		(this->dependency)[RPDH11][3] = RAG7PH11;
 		(this->dependency)[RPDH11][4] = RAGDPH11;
 		(this->dependency_size)[RPDH11] = 5;
-		
-		(this->dependency)[RPDH17][0] = RPDH17;
-		(this->dependency)[RPDH17][1] = RDDH17;
-		(this->dependency_size)[RPDH17] = 2;
-		
-		(this->dependency)[RPDH77][0] = RPDH77;
-		(this->dependency)[RPDH77][1] = RDDH77;
-		(this->dependency_size)[RPDH77] = 2;
-		
+						
 		(this->dependency)[RDAH11][0] = RPDH1;
 		(this->dependency)[RDAH11][1] = RDAH11;
-		(this->dependency)[RDAH11][2] = RDAH17;
-		(this->dependency)[RDAH11][3] = RPDH11;
-		(this->dependency)[RDAH11][4] = RDDH11;
-		(this->dependency)[RDAH11][5] = RAG1PH11;
-		(this->dependency)[RDAH11][6] = RAG7PH11;
-		(this->dependency)[RDAH11][7] = RAGDPH11;
-		(this->dependency_size)[RDAH11] = 8;
-		
-		(this->dependency)[RDAH17][0] = RPDH1;
-		(this->dependency)[RDAH17][1] = RDAH11;
-		(this->dependency)[RDAH17][2] = RDAH17;
-		(this->dependency)[RDAH17][3] = RPDH7;
-		(this->dependency)[RDAH17][4] = RDAH77;
-		(this->dependency)[RDAH17][5] = RPDH17;
-		(this->dependency)[RDAH17][6] = RDDH17;
-		(this->dependency_size)[RDAH17] = 7;
-		
-		(this->dependency)[RDAH77][0] = RPDH7;
-		(this->dependency)[RDAH77][1] = RDAH17;
-		(this->dependency)[RDAH77][2] = RDAH77;
-		(this->dependency)[RDAH77][3] = RPDH77;
-		(this->dependency)[RDAH77][4] = RDDH77;
-		(this->dependency_size)[RDAH77] = 5;
-		
+		(this->dependency)[RDAH11][2] = RPDH11;
+		(this->dependency)[RDAH11][3] = RDDH11;
+		(this->dependency)[RDAH11][4] = RAG1PH11;
+		(this->dependency)[RDAH11][5] = RAG7PH11;
+		(this->dependency)[RDAH11][6] = RAGDPH11;
+		(this->dependency_size)[RDAH11] = 7;
+				
 		(this->dependency)[RDDH11][0] = RPDH1;
 		(this->dependency)[RDDH11][1] = RDAH11;
-		(this->dependency)[RDDH11][2] = RDAH17;
-		(this->dependency)[RDDH11][3] = RPDH11;
-		(this->dependency)[RDDH11][4] = RDDH11;
-		(this->dependency)[RDDH11][5] = RAG1PH11;
-		(this->dependency)[RDDH11][6] = RAG7PH11;
-		(this->dependency)[RDDH11][7] = RAGDPH11;
-		(this->dependency_size)[RDDH11] = 8;
-		
-		(this->dependency)[RDDH17][0] = RPDH1;
-		(this->dependency)[RDDH17][1] = RDAH11;
-		(this->dependency)[RDDH17][2] = RDAH17;
-		(this->dependency)[RDDH17][3] = RPDH7;
-		(this->dependency)[RDDH17][4] = RDAH77;
-		(this->dependency)[RDDH17][5] = RPDH17;
-		(this->dependency)[RDDH17][6] = RDDH17;
-		(this->dependency_size)[RDDH17] = 7;
-		
-		(this->dependency)[RDDH77][0] = RPDH7;
-		(this->dependency)[RDDH77][1] = RDAH17;
-		(this->dependency)[RDDH77][2] = RDAH77;
-		(this->dependency)[RDDH77][3] = RPDH77;
-		(this->dependency)[RDDH77][4] = RDDH77;
-		(this->dependency_size)[RDDH77] = 5;
-		
+		(this->dependency)[RDDH11][2] = RPDH11;
+		(this->dependency)[RDDH11][3] = RDDH11;
+		(this->dependency)[RDDH11][4] = RAG1PH11;
+		(this->dependency)[RDDH11][5] = RAG7PH11;
+		(this->dependency)[RDDH11][6] = RAGDPH11;
+		(this->dependency_size)[RDDH11] = 7;
+				
 		(this->dependency)[RMDH1][0] = RPSH1;
 		(this->dependency)[RMDH1][1] = RMDH1;
 		(this->dependency_size)[RMDH1] = 2;
 		
-		(this->dependency)[RMDH7][0] = RPSH7;
-		(this->dependency)[RMDH7][1] = RMDH7;
-		(this->dependency_size)[RMDH7] = 2;
+		(this->dependency)[RMDH7][0] = RMDH7;
+		(this->dependency_size)[RMDH7] = 1;
 		
 		(this->dependency)[RMDD][0] = RPSD;
 		(this->dependency)[RMDD][1] = RMDD;
@@ -715,13 +660,11 @@ struct sim_data{
 		(this->dependency)[RDG1N][4] = RDG1N;
 		(this->dependency_size)[RDG1N] = 5;
 		
-		(this->dependency)[RMSH7][0] = RPSH7;
-		(this->dependency)[RMSH7][1] = RMDH7;
-		(this->dependency_size)[RMSH7] = 2;
+		(this->dependency)[RMSH7][0] = RMDH7;
+		(this->dependency_size)[RMSH7] = 1;
 		
-		(this->dependency)[RMSH7N][0] = RPSH7;
-		(this->dependency)[RMSH7N][1] = RMDH7;
-		(this->dependency_size)[RMSH7N] = 2;
+		(this->dependency)[RMSH7N][0] = RMDH7;
+		(this->dependency_size)[RMSH7N] = 1;
 		
 		(this->dependency)[RAG7PH11][0] = RMSH7;
 		(this->dependency)[RAG7PH11][1] = RAG7PH11;

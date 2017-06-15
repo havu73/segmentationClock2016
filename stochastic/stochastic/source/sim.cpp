@@ -71,7 +71,7 @@ double simulate_one_param_set(input_params& ip, sim_data& sd, rates& rs, int set
 			score += simulate_mutant(ip, sd, rs, em, wtf, set_index, ip.mutants[i]);
 		}
 		else if (ip.mutants[i] == DAPT_MUTANT){
-			simulate_dapt_mutant(ip, sd, rs, em, wtf, set_index, ip.mutants[i]);
+			score += simulate_dapt_mutant(ip, sd, rs, em, wtf, set_index, ip.mutants[i]);
 		}
 		// revert_rates
 	}
@@ -247,9 +247,17 @@ bool core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 	double current_record_time = 0;
 	int record_per_check = int((double)MINUTE_PER_SLICE / ip.record_granularity);
 	int check_done_time = 0;
-	
+	// Find the gradient to increase/decrease protein delay rates after each time interval from posterior to anterior
+	double* gradient_per_step = new double [em.num_cells]; 
+	calculate_gradient_per_step(ip, rs, gradient_per_step);
 	// number indicating the time step between two intervals to check for states_out_of_bound
 	int bound_check_index = 0;
+	
+	// number of gradient degree steps the protein synthesis delay rates should be, given the current time
+	// First it has to be 0 until the end of ABSOLUTE_RATE_TIME
+	// Then, after every MINUTE_PER_SLICE minutes, it will be incremented by one
+	int gradient_degree = 0;
+	
 	// enter simulation loop
 	while (!done){
 		// 1.find the next reaction
@@ -284,10 +292,30 @@ bool core_simulation(input_params& ip, sim_data& sd, rates& rs, embryo& em){
 				if (check_done_time == (int)ip.time_total){ //time is up
 					done = true;
 				}
+				// 3. Increase the gradient if necessary
+				if (check_done_time >= ABSOLUTE_RATE_TIME && !done){
+					gradient_degree += 1;
+					calculate_gradient_delay_rates(gradient_degree, rs, gradient_per_step);
+				}
 			}
 		}
 	}
+	delete [] gradient_per_step;
 	return false;
+}
+
+void calculate_gradient_delay_rates(int gradient_degree, rates& rs, double* gradient_per_step) {
+	for (int i = 0; i < rs.num_cells; i ++){
+		rs.data[i][NPH1] = rs.data[i][NPH1] * (1 + gradient_degree * gradient_per_step[i]);
+		rs.data[i][NPD] = rs.data[i][NPD] * (1 + gradient_degree * gradient_per_step[i]);
+	}
+}
+
+void calculate_gradient_per_step (input_params& ip, rates& rs, double* gradient_per_step){
+	int num_steps = int ((ip.time_total - ABSOLUTE_RATE_TIME) / MINUTE_PER_SLICE);
+	for (int i = 0 ; i  < rs.num_cells; i ++){
+		gradient_per_step[i] = (rs.data[i][GRADIENT] - 1) / num_steps;
+	}
 }
 
 bool states_out_of_bound(embryo& em){
@@ -296,7 +324,6 @@ bool states_out_of_bound(embryo& em){
 		if (((em.cell_list[i])->current_cons)[MH7] > MRNA_LIM){ return true; }
 		if (((em.cell_list[i])->current_cons)[MD] > MRNA_LIM){ return true; }
 		if (((em.cell_list[i])->current_cons)[PH1] > PROTEIN_LIM){ return true; }
-		if (((em.cell_list[i])->current_cons)[PH7] > PROTEIN_LIM){ return true; }
 		if (((em.cell_list[i])->current_cons)[PD] > PROTEIN_LIM){ return true; }
 	}
 	return false;

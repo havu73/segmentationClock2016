@@ -9,6 +9,8 @@ double simulate_dapt_mutant(input_params&, sim_data&, rates&, embryo&, features&
 void change_rates_based_on_mutants(rates&, int);
 bool core_simulation_dapt(input_params&, sim_data&, rates&, embryo&);
 bool core_simulation(input_params&, sim_data&, rates&, embryo&);
+void calculate_gradient_delay_rates(int, rates&, double*);
+void calculate_gradient_per_step (input_params&, rates&, double*);
 bool states_out_of_bound(embryo&);
 void update_initial_concentrations (embryo&);
 void calculate_initial_propensity(sim_data&, rates&, embryo&);

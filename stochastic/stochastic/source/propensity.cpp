@@ -4,11 +4,6 @@ void propensityRPSH1(embryo& em, int cell_index, rates& rs){
 												* (em.cell_list[cell_index]->current_cons)[MH1];
 }
 
-void propensityRPSH7(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RPSH7] = rs.data[cell_index][PSH7] 
-												* (em.cell_list[cell_index]->current_cons)[MH7];
-}
-
 void propensityRPSD(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RPSD] = rs.data[cell_index][PSD] 
 												* (em.cell_list[cell_index]->current_cons)[MD];
@@ -17,11 +12,6 @@ void propensityRPSD(embryo& em, int cell_index, rates& rs){
 void propensityRPDH1(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RPDH1] = rs.data[cell_index][PDH1] 
 												* (em.cell_list[cell_index]->current_cons)[PH1];
-}
-
-void propensityRPDH7(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RPDH7] = rs.data[cell_index][PDH7] 
-												* (em.cell_list[cell_index]->current_cons)[PH7];
 }
 
 void propensityRPDD(embryo& em, int cell_index, rates& rs){
@@ -34,15 +24,6 @@ void propensityRPDH11(embryo& em, int cell_index, rates& rs){
 												* (em.cell_list[cell_index]->current_cons)[PH11];
 }
 
-void propensityRPDH17(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RPDH17] = rs.data[cell_index][PDH17] 
-												* (em.cell_list[cell_index]->current_cons)[PH17];
-}
-
-void propensityRPDH77(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RPDH77] = rs.data[cell_index][PDH77] 
-												* (em.cell_list[cell_index]->current_cons)[PH77];
-}
 
 void propensityRDAH11(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RDAH11] = rs.data[cell_index][DAH11]
@@ -50,32 +31,12 @@ void propensityRDAH11(embryo& em, int cell_index, rates& rs){
 												* ((em.cell_list[cell_index]->current_cons)[PH1] - 1) / 2.0;
 }
 
-void propensityRDAH17(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RDAH17] = rs.data[cell_index][DAH17]
-												* (em.cell_list[cell_index]->current_cons)[PH1]
-												* (em.cell_list[cell_index]->current_cons)[PH7];
-}
-
-void propensityRDAH77(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RDAH77] = rs.data[cell_index][DAH77]
-												* (em.cell_list[cell_index]->current_cons)[PH7]
-												* ((em.cell_list[cell_index]->current_cons)[PH7] - 1) / 2.0;
-}
 
 void propensityRDDH11(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RDDH11] = rs.data[cell_index][DDH11]
 												* (em.cell_list[cell_index]->current_cons)[PH11];
 }
 
-void propensityRDDH17(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RDDH17] = rs.data[cell_index][DDH17]
-												* (em.cell_list[cell_index]->current_cons)[PH17];
-}
-
-void propensityRDDH77(embryo& em, int cell_index, rates& rs){
-	(em.cell_list[cell_index]->propen)[RDDH77] = rs.data[cell_index][DDH77]
-												* (em.cell_list[cell_index]->current_cons)[PH77];
-}
 
 void propensityRMDH1(embryo& em, int cell_index, rates& rs){
 	(em.cell_list[cell_index]->propen)[RMDH1] = rs.data[cell_index][MDH1]

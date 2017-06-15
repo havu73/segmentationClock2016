@@ -28,7 +28,7 @@ double test_wildtype(input_params& ip, embryo& em, features& wtf, int set_index)
 	
 	// check whether or not the simulation passed condition related to the correlation scores. 
 	// If not, stop testing and move on. No need to test noise condition anymore.
-	bool corr_pass = true;//check_correlations(wtf);
+	bool corr_pass = check_correlations(wtf);
 	
 	if (!corr_pass){
 		if (ip.verbose){

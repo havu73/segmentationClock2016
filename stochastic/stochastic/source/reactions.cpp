@@ -40,22 +40,6 @@ void reactionRPSH1 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 	}
 }
 
-/*
- * H7 protein synthesis
- */
-void reactionRPSH7 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	if (complete){ // delay reaction completed
-		// 1
-		(em.cell_list[cell_index]->current_cons)[PH7] += 1;
-		// 2
-		recalculate_propensities(RPSH7, em, cell_index, sd, rs);
-		// 3
-		(em.cell_list[cell_index]->cdelay)->complete_soonest();
-	} else{ // delay reaction initiated
-		double next_complete_time = em.absolute_time + rs.data[cell_index][NPH7];
-		(em.cell_list[cell_index]->cdelay)->initiate_delay(RPSH7, next_complete_time);
-	}
-}
 void reactionRPSD (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
 	if (complete){
 		// 1
@@ -86,15 +70,6 @@ void reactionRPDH1 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool co
 	recalculate_propensities(RPDH1, em, cell_index, sd, rs);
 }
 
-/*
- * H7 protein degradation
- */
-void reactionRPDH7 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH7] -= 1;
-	// 2
-	recalculate_propensities(RPDH7, em, cell_index, sd, rs);
-}
 
 /*
  * Delta protein degradation
@@ -122,25 +97,6 @@ void reactionRPDH11 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool c
 	recalculate_propensities(RPDH11, em, cell_index, sd, rs);
 }
 
-/*
- * Protein H1- H7 degradation
- */
-void reactionRPDH17 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH17] -= 1;
-	// 2
-	recalculate_propensities(RPDH17, em, cell_index, sd, rs);
-}
-
-/*
- * Protein H7- H7 degradation
- */
-void reactionRPDH77 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){	
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH77] -= 1;
-	// 2
-	recalculate_propensities(RPDH77, em, cell_index, sd, rs);
-}
 
 /*
  * Protein H1-H1 forming through H1 associations
@@ -153,28 +109,7 @@ void reactionRDAH11 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool c
 	recalculate_propensities(RDAH11, em, cell_index, sd, rs);
 }
 
-/*
- * Protein H1-H7 forming through H1- H7 associations
- */
-void reactionRDAH17 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH1] -= 1;
-	(em.cell_list[cell_index]->current_cons)[PH7] -= 1;
-	(em.cell_list[cell_index]->current_cons)[PH17] += 1;
-	// 2
-	recalculate_propensities(RDAH17, em, cell_index, sd, rs);
-}
 
-/*
- * Protein H7-H7 forming through H7-H7 associations
- */
-void reactionRDAH77 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH7] -= 2;
-	(em.cell_list[cell_index]->current_cons)[PH77] += 1;
-	// 2
-	recalculate_propensities(RDAH77, em, cell_index, sd, rs);
-}
 
 /*
  * Protein H1- H1 dissociation
@@ -187,28 +122,6 @@ void reactionRDDH11 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool c
 	recalculate_propensities(RDDH11, em, cell_index, sd, rs);
 }
 
-/*
- * Protein H1- H7 dissociation
- */
-void reactionRDDH17 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH1] += 1;
-	(em.cell_list[cell_index]->current_cons)[PH7] += 1;
-	(em.cell_list[cell_index]->current_cons)[PH17] -= 1;
-	// 2
-	recalculate_propensities(RDDH17, em, cell_index, sd, rs);
-}
-
-/*
- * Protein H7- H7 dissociation
- */
-void reactionRDDH77 (embryo& em, int cell_index, sim_data& sd, rates& rs, bool complete){
-	// 1
-	(em.cell_list[cell_index]->current_cons)[PH7] += 2;
-	(em.cell_list[cell_index]->current_cons)[PH77] -= 1;
-	// 2
-	recalculate_propensities(RDDH77, em, cell_index, sd, rs);
-}
 
 /*
  * H1 mRNA degradation

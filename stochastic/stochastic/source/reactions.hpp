@@ -5,23 +5,15 @@
 void recalculate_propensities(int, embryo&, int, sim_data&, rates&);
 
 void reactionRPSH1 (embryo&, int, sim_data&, rates&, bool);
-void reactionRPSH7 (embryo&, int, sim_data&, rates&, bool);
 void reactionRPSD (embryo&, int, sim_data&, rates&, bool);
 
 void reactionRPDH1 (embryo&, int, sim_data&, rates&, bool);
-void reactionRPDH7 (embryo&, int, sim_data&, rates&, bool);
 void reactionRPDD (embryo&, int, sim_data&, rates&, bool);
 void reactionRPDH11(embryo&, int, sim_data&, rates&, bool);
-void reactionRPDH17 (embryo&, int, sim_data&, rates&, bool);
-void reactionRPDH77 (embryo&, int, sim_data&, rates&, bool);
 
 void reactionRDAH11 (embryo&, int, sim_data&, rates&, bool);
-void reactionRDAH17 (embryo&, int, sim_data&, rates&, bool);
-void reactionRDAH77 (embryo&, int, sim_data&, rates&, bool);
 
 void reactionRDDH11 (embryo&, int, sim_data&, rates&, bool);
-void reactionRDDH17 (embryo&, int, sim_data&, rates&, bool);
-void reactionRDDH77 (embryo&, int, sim_data&, rates&, bool);
 
 void reactionRMDH1 (embryo&, int, sim_data&, rates&, bool);
 void reactionRMDH7 (embryo&, int, sim_data&, rates&, bool);

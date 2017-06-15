@@ -49,96 +49,107 @@ void init_verbosity (input_params& ip) {
 }
 
 void init_propensities(sim_data& sd){
+	// protein synthesis
 	sd.prop_funs[RPSH1] = &propensityRPSH1;
-	sd.prop_funs[RPSH7] = &propensityRPSH7;
 	sd.prop_funs[RPSD] = &propensityRPSD;
 	
+	// protein degradation
 	sd.prop_funs[RPDH1] = &propensityRPDH1;
-	sd.prop_funs[RPDH7] = &propensityRPDH7;
 	sd.prop_funs[RPDD] = &propensityRPDD;
 	sd.prop_funs[RPDH11] = &propensityRPDH11;
-	sd.prop_funs[RPDH17] = &propensityRPDH17;
-	sd.prop_funs[RPDH77] = &propensityRPDH77;
-	
+
+	// dimer association
 	sd.prop_funs[RDAH11] = &propensityRDAH11;
-	sd.prop_funs[RDAH17] = &propensityRDAH17;
-	sd.prop_funs[RDAH77] = &propensityRDAH77;
 	
+	// dimer dissociation
 	sd.prop_funs[RDDH11] = &propensityRDDH11;
-	sd.prop_funs[RDDH17] = &propensityRDDH17;
-	sd.prop_funs[RDDH77] = &propensityRDDH77;
 	
+	// mRNA degradation
 	sd.prop_funs[RMDH1] = &propensityRMDH1;
 	sd.prop_funs[RMDH7] = &propensityRMDH7;
 	sd.prop_funs[RMDD] = &propensityRMDD;
 	
+	// her1 mRNA transcription
 	sd.prop_funs[RMSH1] = &propensityRMSH1;
 	sd.prop_funs[RMSH1N] = &propensityRMSH1N;
 	
+	// her1 gene binding and unbinding with ph11
 	sd.prop_funs[RAG1PH11] = &propensityRAG1PH11;
 	sd.prop_funs[RDG1PH11] = &propensityRDG1PH11;
 	
+	//her1 gene binding and unbinding with nicd
 	sd.prop_funs[RAG1N] = &propensityRAG1N;
 	sd.prop_funs[RDG1N] = &propensityRDG1N;
 	
+	// her7 mRNA transcription
 	sd.prop_funs[RMSH7] = &propensityRMSH7;
 	sd.prop_funs[RMSH7N] = &propensityRMSH7N;
 	
+	// her1 gene binding and unbinding with ph11
 	sd.prop_funs[RAG7PH11] = &propensityRAG7PH11;
 	sd.prop_funs[RDG7PH11] = &propensityRDG7PH11;
 	
+	//her1 gene binding and unbinding with nicd
 	sd.prop_funs[RAG7N] = &propensityRAG7N;
 	sd.prop_funs[RDG7N] = &propensityRDG7N;
 	
+	// delta mRNA transcription
 	sd.prop_funs[RMSD] = &propensityRMSD;
+	
+	// delta genes binding and unbinding with ph11
 	sd.prop_funs[RAGDPH11] = &propensityRAGDPH11;
 	sd.prop_funs[RDGDPH11] = &propensityRDGDPH11;
 }
 
 void init_reactions(sim_data& sd){
+	// protein synthesis
 	sd.reac_funs[RPSH1] = &reactionRPSH1;
-	sd.reac_funs[RPSH7] = &reactionRPSH7;
 	sd.reac_funs[RPSD] = &reactionRPSD;
-	
+
+	// protein degradation
 	sd.reac_funs[RPDH1] = &reactionRPDH1;
-	sd.reac_funs[RPDH7] = &reactionRPDH7;
 	sd.reac_funs[RPDD] = &reactionRPDD;
 	sd.reac_funs[RPDH11] = &reactionRPDH11;
-	sd.reac_funs[RPDH17] = &reactionRPDH17;
-	sd.reac_funs[RPDH77] = &reactionRPDH77;
 	
+	// dimer association
 	sd.reac_funs[RDAH11] = &reactionRDAH11;
-	sd.reac_funs[RDAH17] = &reactionRDAH17;
-	sd.reac_funs[RDAH77] = &reactionRDAH77;
 	
+	// dimer dissociation
 	sd.reac_funs[RDDH11] = &reactionRDDH11;
-	sd.reac_funs[RDDH17] = &reactionRDDH17;
-	sd.reac_funs[RDDH77] = &reactionRDDH77;
 	
+	// mRNA degradation
 	sd.reac_funs[RMDH1] = &reactionRMDH1;
 	sd.reac_funs[RMDH7] = &reactionRMDH7;
 	sd.reac_funs[RMDD] = &reactionRMDD;
 	
+	// her1 mrna transcription
 	sd.reac_funs[RMSH1] = &reactionRMSH1;
 	sd.reac_funs[RMSH1N] = &reactionRMSH1N;
 	
+	// her1 gene binding/ unbinding with ph11
 	sd.reac_funs[RAG1PH11] = &reactionRAG1PH11;
 	sd.reac_funs[RDG1PH11] = &reactionRDG1PH11;
 	
+	// her1 gene binding/unbinding with nicd
 	sd.reac_funs[RAG1N] = &reactionRAG1N;
 	sd.reac_funs[RDG1N] = &reactionRDG1N;
 	
+	// her7 mrna transcription
 	sd.reac_funs[RMSH7] = &reactionRMSH7;
 	sd.reac_funs[RMSH7N] = &reactionRMSH7N;
 	
+	// her7 gene binding/ unbinding with ph11
 	sd.reac_funs[RAG7PH11] = &reactionRAG7PH11;
 	sd.reac_funs[RDG7PH11] = &reactionRDG7PH11;
 	
+	// her7 binding / unbinding with nicd
 	sd.reac_funs[RAG7N] = &reactionRAG7N;
 	sd.reac_funs[RDG7N] = &reactionRDG7N;
 	
+	// delta mrna transcription
 	sd.reac_funs[RMSD] = &reactionRMSD;
 	
+	// delta gene binding/ unbinding with ph11
 	sd.reac_funs[RAGDPH11] = &reactionRAGDPH11;
 	sd.reac_funs[RDGDPH11] = &reactionRDGDPH11;
 }

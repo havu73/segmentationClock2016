@@ -11,6 +11,7 @@ void read_file (input_data*);
 bool parse_param_line (parameters&, int, char*, int&);
 void parse_ranges_file (pair <double, double>[], char*);
 bool not_EOL (char);
+void create_output_directory (input_params&);
 void create_set_directory (int, input_params&);
 void create_mutant_directory(int, int, input_params&);
 void print_concentrations(input_params&, int, int, embryo&);

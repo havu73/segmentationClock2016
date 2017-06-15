@@ -249,6 +249,29 @@ bool not_EOL (char c) {
 }
 
 /*
+ * Create the output directory that the user specified, it it doesn't exist yet.
+ */
+ 
+void create_output_directory (input_params& ip){
+	if (ip.has_out_dir){
+		cout << term->blue << "Creating directory " << ip.out_dir << " if necessary . . . " << term->reset << endl;
+		char* single_dir = strtok(ip.out_dir, "/");
+		char* directories = new char [100]; // array of char to store files name of directories that we have to create
+		while (single_dir != NULL){
+			strcat(directories, single_dir);
+			strcat(directories, "/");
+			if (mkdir(directories, 0775) != 0 && errno!= EEXIST){
+				cout << term->red << "Couldn't create '" << ip.out_dir << "' directory!" << term->reset << endl;
+				exit(EXIT_FILE_WRITE_ERROR);
+			}
+			single_dir = strtok(NULL, "/");
+		}
+		strcpy(ip.out_dir, directories);
+		delete[] directories;
+	}
+}
+
+/*
  * Create directory set_setIndex_scnORfib inside simulation. this directory contains concentrations files. 
  * Called in simulate_all_params(sim.cpp)
  * params:

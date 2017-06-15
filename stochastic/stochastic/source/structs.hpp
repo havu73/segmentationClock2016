@@ -172,10 +172,10 @@ struct input_params{
 		this->print_random = false;
 
 		//sets
-		this->num_sets = 1;
+		this->num_sets = DEFAULT_NUM_SET;
 		
 		// timing
-		this->time_total = 310;
+		this->time_total = DEFAULT_TOTAL_TIME;
 		
 		//seeds
 		this->sim_seed = 0;
@@ -201,13 +201,13 @@ struct input_params{
 		this->null_stream = new ofstream("/dev/null");
 		
 		// number of cells in the embryo
-		this->num_cells = 4;
+		this->num_cells = DEFAULT_NUM_CELLS;
 		
 		// number of bins to do data analysis
 		this->num_bin = DEFAULT_NUM_BIN;
 		
 		// parameters about data transfer and time control of the simulation
-		this->record_granularity = 0.1;
+		this->record_granularity = DEFAULT_RECORD_GRAN;
 	}
 	
 	~input_params(){
@@ -332,7 +332,7 @@ struct rates {
 
 struct parameters {
 	//rates bases and rates for mutants
-	double** data;  // Base rates taken from the current parameter set
+	double** data;  // Base rates taken from the current parameter set [set_index][rate_index]
 	int num_sets; 
 	explicit parameters (int num_sets) {
 		this->num_sets = num_sets;
@@ -836,12 +836,13 @@ struct peak_trough{
 };
 
 struct features{
-	double** avg_amplitude; // [NUM_KEEP_STATE][cell]
+	double** avg_amplitude; // [NUM_KEEP_STATE][cell]: average peaks - average troughs of all each cell
+	double* alternative_amplitude; 	// [NUM_KEEP_STATE]: top 10% concentrations of slices - bottom 10% concentrations of slices
 	double** avg_period;	// [KEEP_STATE][cell]
 	double** mid_ptt;		// [KEEP STATE][cell]
 	double** last_ptt;		// [KEEP STATE][cell]
 	double** correlation; 	// [KEEP_STATE][cell] we only calculate correlations between cell 0 and other cells in the embryo
-	double avg_correlation; 	// average of correlation
+	double avg_correlation; 	// average of correlation of all cells pairs (1-2, 1-3, 1-4), with mh1 and mh7 as the two states we care about
 	double* intrinsic;		// [bin]
 	double* extrinsic;		// [bin]
 	double* avg_cons;		// [bin]
@@ -855,6 +856,7 @@ struct features{
 	features(int num_cells, int num_bin){
 		this->num_cells = num_cells; 
 		this->avg_amplitude = new double* [NUM_KEEP_STATES];
+		this->alternative_amplitude = new double [NUM_KEEP_STATES];
 		this->avg_period = new double* [NUM_KEEP_STATES];
 		this->mid_ptt = new double* [NUM_KEEP_STATES];
 		this->last_ptt = new double* [NUM_KEEP_STATES];
@@ -889,6 +891,7 @@ struct features{
 		memset(this->intrinsic, 0, sizeof(double) * this->num_bin);
 		memset(this->extrinsic, 0, sizeof(double) * this->num_bin);
 		memset(this->avg_cons, 0, sizeof(double) * this->num_bin);
+		memset(this->alternative_amplitude, 0, sizeof(double) * NUM_KEEP_STATES);
 		this->slices_in_noise = 0;
 		this->slices_ex_noise = 0;
 		this->slices_tot_noise = 0;
@@ -904,6 +907,7 @@ struct features{
 			delete [] (this->correlation)[i];
 		}
 		delete [] this->avg_amplitude;
+		delete [] this->alternative_amplitude;
 		delete [] this->avg_period;
 		delete [] this->mid_ptt;
 		delete [] this->last_ptt;

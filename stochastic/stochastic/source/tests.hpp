@@ -5,6 +5,7 @@ double test_wildtype(input_params&, embryo&, features&, int);
 int test_delta(input_params&, embryo&, features&, features&, int);
 double check_WT_sustained (input_params&, features&);
 double check_WT_amplitude (input_params&, features&);
+double check_wt_alternative_amplitude(input_params&, features&);
 double check_WT_period (input_params&, features&);
 int check_delta_amplitude (features&);
 double check_WT_avg_cons(input_params&, features&);

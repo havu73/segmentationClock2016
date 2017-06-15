@@ -181,6 +181,31 @@ double check_WT_amplitude (input_params& ip, features& wtf){
 }
 
 /*
+ * Check amplitude within range, score right now is 0
+ */
+double check_wt_alternative_amplitude(input_params& ip, features& wtf){
+	double score = 0;
+	//check her1
+	if (wtf.alternative_amplitude[KEEPMH1] >= WT_H1_ALT_AMP_LOW && wtf.alternative_amplitude[KEEPMH1] <= WT_H1_ALT_AMP_HIGH){
+		score += 0;
+	}
+	else{
+		if (ip.verbose){
+			cout << "Alternative amplitude her1 failed: " << wtf.alternative_amplitude[KEEPMH1];
+		}
+	}
+	//check her7
+	if (wtf.alternative_amplitude[KEEPMH7] >= WT_H7_ALT_AMP_LOW && wtf.alternative_amplitude[KEEPMH7] <= WT_H7_ALT_AMP_HIGH){
+		score += 0;
+	}
+	else{
+		if (ip.verbose){
+			cout << "Alternative amplitude her7 failed: " << wtf.alternative_amplitude[KEEPMH7];
+		}
+	}
+	return score;
+}
+/*
  * Max_score : 1
  */
 double check_WT_period (input_params& ip, features& wtf){

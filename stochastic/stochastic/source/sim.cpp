@@ -17,7 +17,9 @@ void simulate_all_params_sets(input_params& ip, parameters& pr){
 	sim_data sd;
 	init_propensities(sd);
 	init_reactions(sd);
-	//init_seeds(ip);
+	// create output directory if the user specified so
+	create_output_directory (ip);
+
 	// create debug files if needed here
 	
 	for (int i = 0; i < ip.num_sets; i++){

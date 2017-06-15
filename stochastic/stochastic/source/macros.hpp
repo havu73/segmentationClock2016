@@ -175,8 +175,12 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 	return NUM_MID_PT + NUM_LAST_PT + 1;
 }
 
-// PARAMETERS FOR BINNING DATA
+// Default user parameter values
 #define	DEFAULT_NUM_BIN 	3
+#define DEFAULT_NUM_SET		1
+#define DEFAULT_TOTAL_TIME	310
+#define DEFAULT_NUM_CELLS	4
+#define	DEFAULT_RECORD_GRAN	0.1
 
 // number of bins for calculating coefficent of variation squared
 #define CVS_BIN		5
@@ -195,6 +199,10 @@ inline int low_num_pt(){  // in order to be considered to have sustained oscilla
 #define WT_H1_AMP_HIGH		70//45
 #define WT_H7_AMP_LOW		10//43
 #define WT_H7_AMP_HIGH		70//51
+#define WT_H1_ALT_AMP_LOW	35
+#define WT_H1_ALT_AMP_HIGH	45
+#define WT_H7_ALT_AMP_LOW	43
+#define WT_H7_ALT_AMP_HIGH	51
 #define WT_LOW_PER			22//27
 #define WT_HIGH_PER			38//33
 // Average Her mRNA levels in bins
